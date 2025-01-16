@@ -1,0 +1,197 @@
+<script type="text/x-tmpl" id="tmpl-table-series">
+    {% var current = Math.ceil(o.offset / o.limit); if (isNaN(current)) { current = 1; }
+           total_pages = Math.ceil(o.total / o.limit); if (isNaN(total_pages)) { total_pages = 1; } %}
+    <form id="search_form">
+        <div class="row form-row justify-content-end" style="position:relative;">
+            <div class="col-2">
+                <select id="oc-batch" class="select-css">
+                    <option value="0" {% if (o.batch == 0) { %}selected{% } %}>{% if (o.batch == 0) { %}Select ...{% } else { %}All{% } %}</option>
+                    {% if (batches.success === 1) { %}
+                    {% $.each(batches.result, function(i, el) { console.log(el); %}
+                    <option value="{%=el.id%}" {% if (o.batch == el.id) { %}selected{% } %}>{%#(el.status!='completed'?'&#9744;':'&#9745;')%}&nbsp;&nbsp;Batch {%=el.id%} ({%=moment(el.date_last).format('YYYY-MM-DD')%})</option>
+                    {% }); }%}
+                    <!--option value="-1">Create New ...</option-->
+                </select>
+            </div>
+            <div class="col-4">
+                <div class="col-auto">
+                    <div class="input-group mb-2">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control" id="series_filter" placeholder="Search..." value="{%=o.filter%}">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-dark"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div id="filter-retention">
+                    <div id="set1">
+                        <a href="#" rel="all" class="badge badge-pill {%  if (o.ret =="all") { %}badge-primary{% } else { %}badge-light{% } %}">All <span class="badge badge-light">{%=o.all%}</span></a>
+                        <a href="#" rel="normal" class="badge badge-pill {%  if (o.ret =="normal") { %}badge-primary{% } else { %}badge-light{% } %}">Default (4 years) <span class="badge badge-light">{%=o.normal%}</span></a>
+                        <a href="#" rel="long" class="badge badge-pill {%  if (o.ret =="long") { %}badge-primary{% } else { %}badge-light{% } %}">Long (8 years) <span class="badge badge-light">{%=o.long%}</span></a>
+                        <a href="#" rel="forever" class="badge badge-pill {%  if (o.ret =="forever") { %}badge-primary{% } else { %}badge-light{% } %}">Keep Forever <span class="badge badge-light">{%=o.forever%}</span></a>
+                    </div>
+                    <div id="set2">
+                        <a href="#" rel="none" class="badge badge-pill {%  if (o.action =="none") { %}badge-primary{% } else { %}badge-light{% } %}">None</a>
+                        <a href="#" rel="ready" class="badge badge-pill {%  if (o.action =="ready") { %}badge-primary{% } else { %}badge-light{% } %}">Ready<span class="badge badge-light">{%=o.state_ready%}</span></a>
+                        <a href="#" rel="review" class="badge badge-pill {%  if (o.action =="review") { %}badge-primary{% } else { %}badge-light{% } %}">Review<span class="badge badge-light">{%=o.state_review%}</span></a>
+                        <a href="#" rel="done" class="badge badge-pill {%  if (o.action =="done") { %}badge-primary{% } else { %}badge-light{% } %}">Done<span class="badge badge-light">{%=o.state_done%}</span></a>
+                        <a href="#" rel="error" class="badge badge-pill {%  if (o.action =="error") { %}badge-primary{% } else { %}badge-light{% } %}">Error<span class="badge badge-light">{%=o.state_error%}</span></a>
+                        <a href="#" rel="empty" class="badge badge-pill {%  if (o.action =="empty") { %}badge-primary{% } else { %}badge-light{% } %}">Empty<span class="badge badge-light">{%=o.state_empty%}</span></a>
+                    </div>
+                    <!--div id="set3">
+                        <div class="switch">
+                            <input type="checkbox" id="chk_use_AAE" data-dept="AAE" data-hash="dc6aad"><label id="toggle_use_AAE" for="chk_use_AAE">Toggle</label>
+                        </div>
+                    </div-->
+                </div>
+            </div>
+        </div>
+    </form>
+    <table class="main-tbl" data-current="{%=(current+1)%}" data-total="{%=o.total%}" data-offset="{%=o.offset%}" data-count="{%=o.count%}" data-limit="{%=o.limit%}">
+        <thead>
+            <tr>
+                <th style="width: 260px;" class="sort {%=sort_dir(o.order,'title')%}" data-rel="title">
+                    <span>
+                        Series
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 220px;" class="sort {%=sort_dir(o.order,'organizer')%}" data-rel="organizer">
+                    <span>
+                        Organizer(s)
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 100px;" class="sort {%=sort_dir(o.order,'retention')%}" data-rel="retention">
+                    <span>
+                        Retention
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 140px;" class="sort {%=sort_dir(o.order,'first_recording')%}" data-rel="first_recording">
+                    <span>
+                        First Recording
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 140px;" class="sort {%=sort_dir(o.order,'last_recording')%}" data-rel="last_recording">
+                    <span>
+                        Last Recording
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 96px;" class="sort {%=sort_dir(o.order,'events')%}" data-rel="events">
+                    <span>
+                        # Events
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 96px;">&nbsp;</th>
+                <th style="width: 96px;">
+                    <span>
+                        Actions
+                        <i></i>
+                    </span>
+                </th>
+                <!--th style="min-width: 90px;"> </th-->
+            </tr>
+        </thead>
+        <tbody>
+            {%  if (o.result) {
+                    include('tmpl-row', o.result);
+                } else {
+                    include('tmpl-row-loading', {});
+                }
+            %}
+        </tbody>
+    </table>
+    <div class="row">
+        <div class="col-md-8">
+            <!--p>{%=total_pages%} - {%=current%} ({%=o.offset%}) - {%=o.count%} - {%=o.limit%}</p-->
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a class="page-link {% if (current == 1){ print("disabled"); } %}" {% if (current == 1){ %}aria-disabled="true"{% } %} href="#" id="page_prev" rel="prev" data-add="-1"><i class="fas fa-chevron-left"></i></a></li>
+                    {% $.each( pages(o.total, o.offset, o.limit), function( i, v ) { %}
+                        <li class="page-item{%=(isNaN(v)?' disabled': (v==(current+1)?' active':''))%}"><a class="page-link" href="#" rel='{%=(isNaN(v)?'spacer':v)%}'>{%=v%}</a></li>
+                    {% }); %}
+                    <li class="page-item">
+                        <a class="page-link {% if (current == total_pages){ print("disabled"); } %}" {% if (current == 1){ %}aria-disabled="true"{% } %} href="#" id="page_next" rel="next" data-add="1"><i class="fas fa-chevron-right"></i></a></li>
+                </ul>
+            </nav>
+        </div>
+        <!--div class="col-md-4 text-right">
+            <select>
+                {% $.each([10, 20, 50, 100], function( i, v ) { %}
+                <option value="{%=v%}">{%=v%}</option>
+                {% }); %}
+            </select>
+        </div-->
+    </div>
+</script>
+
+<script type="text/x-tmpl" id="tmpl-row">
+    {% if (o.length == 0) { %}
+    <tr>
+        <td colspan="8">No series found matching search criteria.</td>
+    </tr>
+    {% } else {
+        $.each(o, function( i, series ) { %}
+    <tr>
+        <td>{%=series.title%}</td>
+        <td>
+            <div>{%=series.first_name%} {%=series.last_name%}</div>
+            <div>{%=series.username%}
+            {% if (series.user_status != 'not set') {
+                var st = series.user_status.toLowerCase().replace('inactive','inactive ').replace('thirdparty','third party');
+                if (st.indexOf('inactive') > -1) { %}<span class="badge badge-secondary">{% }
+                    else if (st.indexOf('staff') > -1) { %}<span class="badge badge-primary">{% }
+                    else if (st.indexOf('guest') > -1) { %}<span class="badge badge-light">{% }
+                    else if (st.indexOf('third party') > -1) { %}<span class="badge badge-dark">{% }
+                    else { %}<span class="badge badge-info">{% } %}{%=st.upFirst()%}</span>{% } %}</div>
+        </td>
+        <td>
+            <div>{%=series.retention%}</div>
+            <!--div>{%=series.modification_date%} {%=series.hash_retention%} {%=series.hash_modification_date%}</div-->
+        </td>
+        <td>
+            {% if (series.first_recording == '1970-01-01 00:00:00') { %}-{% } else { %}
+            {%=moment(series.first_recording).format('YYYY-MM-DD HH:mm')%}
+            {% } %}
+        </td>
+        <td>
+            {% if (series.last_recording == '1970-01-01 00:00:00') { %}-{% } else { %}
+            {%=moment(series.last_recording).format('YYYY-MM-DD HH:mm')%}
+            {% } %}
+        </td>
+        <td class="text-right">{%=series.count%}</td>
+        <td class="text-right">
+            {% if (series.batch > 0) { %}
+            <div class="series_state_display">
+                <a href="#" title="Has Mail: {%=(series.mail_count>0?'Yes':'No')%}" class="{%=(series.mail_count>0?'yes':'no')%}"></a>
+                <a href="#" title="Is Active: {%=(series.active>0?'Yes':'No')%}" class="{%=(series.active>0?'yes':'no')%}"></a>
+                <a href="#" title="{%=(series.action).upFirst()%}" class="state_{%=(series.action)%}">{%=(series.action).upFirst()%}</a>
+            </div>
+            {% } else { %}&nbsp;{% } %}
+        </td>
+        <td>
+            <div class="row no-gutters" style="display: grid; grid-template-columns: 1fr 1fr 1fr;"">
+                <div class="col"><a style="font-size: large;padding: 5px;" href="https://srvubuclt001.uct.ac.za/optout/view-series/{%=series.hash%}"><i class="fas fa-align-left"></i></a></div>
+                <div class="col"><a style="font-size: large;padding: 5px;" target="_blank" href="https://jira.cilt.uct.ac.za/issues/?jql=text%20~%20%22{%=series.series%}%22"><img src="/optout/public/build/images/logo-jira.png" style="width: 22px;height: 22px;"/></a></div>
+                <div class="col"><a style="font-size: large;padding: 5px;" target="_blank" href="https://media.uct.ac.za/admin-ng/index.html#/events/series?modal=series-details&tab=metadata&resourceId={%=series.series%}"><img src="/optout/public/build/images/logo-opencast.png" style="width: 22px;height: 22px;"/></a></div>
+            </div>
+        </td>
+    </tr>
+    {% } ); } %}
+</script>
+
+<script type="text/x-tmpl" id="tmpl-row-loading">
+    <tr>
+        <td colspan="8">
+            <i class="fas fa-cog fa-spin fa-2x"></i>
+            <span style="display: inline-block; position: relative; left: 10px;top: -5px;">Loading series information...</span>
+        </td>
+    </tr>
+</script>

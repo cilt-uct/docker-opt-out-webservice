@@ -1,0 +1,127 @@
+{% include 'html_start.html' %}
+    <div class="content">
+        {% include 'header.html' %}
+        <a name="top" class="anchor"></a>
+        <div class="container post">
+            {% include 'header_nav.html' %}
+            <div class="row post-body">
+                <div class="col-md-12 post-title">
+                    <h3><span style="color: #5caad2;">Lecture Recording</span> Series</h3>
+                    <br/>
+                    <div id="main-table" class="workflow-details">
+                        <!--p>{{authenticated|json_encode()}}</p-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ asset('/optout/public/build/app.js') }}"></script>
+    <script src="{{ asset('/optout/public/build/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('/optout/public/build/js/moment.min.js') }}"></script>
+    <script src="{{ asset('/optout/public/build/js/tmpl.js') }}"></script>
+    <script src="{{ asset('/optout/public/build/js/utils.js') }}"></script>
+    <script>
+        var rentention_cycle = { "forever": "Keep Forever", "normal": "Default (4 years)", "long": "Long (8 years)" },
+            options = { "page": 1, "limit": 15, "filter": "", "order": "title,asc", "max": 0, "ret": "all", "act":"none", "batch": 0},
+            batches = {{(batches|json_encode|raw)}};
+
+        function showSeries(order, current, limit, filter, ret, batch, act) {
+            var $order = order || options.order,
+                $current = current || options.page,
+                $limit = limit || options.limit,
+                $filter = filter || options.filter;
+                $ret = ret || options.ret;
+                $act = act || options.act;
+                $batch = batch || options.batch;
+
+            console.log(options);
+            $.ajax({
+                url: "/optout/api/v0/series/?page="+$current
+                                    +($order!=""?"&order="+$order:"")
+                                    +($limit!=""?"&limit="+$limit:"")
+                                    +($ret!=""?"&ret="+$ret:"")
+                                    +($act!=""?"&act="+$act:"")
+                                    +($batch!=""?"&batch="+$batch:"")
+                                    +($filter!=""?"&filter="+encodeURI($filter):""),
+                method: 'GET',
+                dataType: 'json'
+            }).done(function(data) {
+                options.max = Math.ceil(data.total / data.limit);
+                if(isNaN(options.max)) { options.max = 0; }
+                $('#main-table').html(tmpl('tmpl-table-series', data))
+            }).fail(function(xhr) {
+                console.log(xhr);
+            });
+        }
+
+        $(function() {
+            $('#main-table')
+                .html(tmpl('tmpl-table-series', {}))
+                .on('click','th.sort', function(event) {
+                    event.preventDefault();
+                    var $el = $(this);
+
+                    if ($el.is('.asc,.desc')) {
+                        $el.toggleClass('asc desc');
+                    } else {
+                        $el.addClass('asc').siblings().removeClass('asc desc');
+                    }
+                    options.order = $el.data('rel') +','+
+                                $el.attr('class').split(' ').filter(function(item) { return item == 'asc' || item == 'desc'; }).join();
+                    showSeries();
+                }).on('click', 'nav > .pagination a', function(event){
+                    event.preventDefault();
+                    var n = parseInt(options.page,10),
+                        $el = $(this);
+                    switch($(this).attr('rel')) {
+                        case 'prev':
+                        case 'next':
+                                n += parseInt($el.data('add'),10);
+                                n = (n <= 0 ? 1: (n >= options.max ? options.max : n));
+                            break;
+                        default: n = $(this).attr('rel'); break;
+                    }
+                    options.page = n;
+                    showSeries();
+                }).on('click','#filter-retention #set1 a', function(event) {
+                    event.preventDefault();
+                    options.ret = $(this).attr('rel');
+                    options.act = 'none';
+                    options.page = 1;
+                    options.offset = 0;
+                    showSeries();
+                }).on('click','#filter-retention #set2 a', function(event) {
+                    event.preventDefault();
+                    options.act = $(this).attr('rel');
+                    options.page = 1;
+                    options.offset = 0;
+                    showSeries();
+                }).on('submit', '#search_form', function(event) {
+                    event.preventDefault();
+                    options.filter = $('#series_filter').val();
+                    options.page = 1;
+                    options.offset = 0;
+                    showSeries();
+                }).on('click', '#search_form .btn-dark', function(event) {
+                    event.preventDefault();
+                    $('#series_filter').val('');
+                    options.filter = '';
+                    showSeries();
+                }).on('change','#oc-batch', function(event) {
+                    var _v = $(this).val();
+                    if (_v >= 0) {
+                        options.batch = $(this).val();
+                        options.page = 1;
+                        options.offset = 0;
+                        showSeries();
+                    } else {
+                        console.log(_v);
+                    }
+                });
+
+            showSeries();
+        });
+    </script>
+    {{ source('series_templates.html') }}
+{% include 'footer.html' %}
+{% include 'html_end.html' %}

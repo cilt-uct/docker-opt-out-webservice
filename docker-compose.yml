@@ -1,0 +1,31 @@
+services:
+  nginx:
+    container_name: opt-out-nginx
+    build: ./nginx/
+    ports:
+      - 95:80
+    volumes:
+        - ./optout/:/var/www/html/
+    networks:
+      - opt-out-network
+
+  php:
+    container_name: opt-out-php
+    build: ./optout/
+    expose:
+      - 9000
+    volumes:
+      - ./optout/:/var/www/html/
+    working_dir: /var/www/html
+    environment:
+      - APP_ENV=dev
+    command: >
+      sh -c "chown -R www-data:www-data /var/www/html/var &&
+             chmod -R 775 /var/www/html/var &&
+             php-fpm"
+    networks:
+      - opt-out-network
+
+networks:
+  opt-out-network: # Define a custom network
+    driver: bridge

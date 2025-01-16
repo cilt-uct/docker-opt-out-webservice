@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture Recording Automated Setup</title>
+    <link rel="stylesheet" href="{{ asset('/optout/assets/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('/optout/assets/fonts/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('/optout/assets/css/user.css') }}">
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-default">
+            <div class="container">
+                <img src="{{ asset('/optout/assets/img/uct.svg') }}" alt="University of Cape Town" class="navbar-brand"/>
+            </div>
+        </nav>
+    </header>
+    <div class="container post">
+        <div class="row post-body">
+            <div class="col-md-12 post-title">
+                <h3><span style="color: #5caad2;">Lecture Recording</span> Automated Setup <small>or</small> Opt-Out</h3>
+                <p class="author"><span class="text-muted">{{created_at|date("F jS \\a\\t g:ia")}}</span></p>
+                <br/>
+                <p style="font-size: 16px;">Your department has chosen to opt-out of automated lecture recording setup.</p>
+                <p style="font-size: 16px;">For further information, please contact <a href="mailto:cilt-helpdesk@uct.ac.za?subject=Automated Setup of Lecture Recording for {{dept}}" title="Cilt Help Desk">cilt-helpdesk@uct.ac.za</a></p>
+                <p style="font-size: 16px;"><a href="http://www.cilt.uct.ac.za/cilt/lecture-recording#howto" title="Lecture recording: How To">Self-service setup</a> of lecture recording is still available in Vula for individual courses or lectures.</p>
+            </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+    <script src="{{ asset('/optout/assets/bootstrap/js/bootstrap.min.js') }}"></script>
+    <!-- https://www.pexels.com/photo/auditorium-benches-chairs-class-207691/ -->
+</body>
+</html>
