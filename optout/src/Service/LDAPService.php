@@ -30,7 +30,7 @@ class LDAPService
         $this->logger = $logger;
     }
 
-        public function authenticate(string $username, string $password): bool
+    public function authenticate(string $username, string $password): bool
     {
         $this->logger->info("Attempting to authenticate user '{$username}'.");
 
@@ -80,4 +80,52 @@ class LDAPService
         ldap_unbind($connection);
         return false; // Authentication failed
     }
+
+    public function findUserByCN(string $cn): ?array
+    {
+        $this->logger->info("Searching for user with CN '{$cn}'.");
+
+        // Try to connect to LDAP server
+        $connection = ldap_connect($this->host, $this->port);
+
+        if (!$connection) {
+            $this->logger->error("Unable to connect to LDAP server: {$this->host}:{$this->port}");
+            throw new \RuntimeException("Unable to connect to LDAP server.");
+        }
+
+        ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+        ldap_set_option($connection, LDAP_OPT_REFERRALS, 0);
+
+        // Check if we can bind with the service account
+        if (!ldap_bind($connection, $this->user, $this->password)) {
+            $this->logger->error("Unable to bind to LDAP server with user: {$this->user}");
+            ldap_unbind($connection);
+            throw new \RuntimeException("Unable to bind to LDAP server.");
+        }
+
+        // Search for the user DN
+        $search = ldap_search($connection, $this->baseDn, sprintf($this->filter, ldap_escape($cn, '', LDAP_ESCAPE_FILTER)));
+        if (!$search) {
+            $this->logger->error("LDAP search failed for user '{$cn}'.");
+            ldap_unbind($connection);
+            return false;
+        }
+
+        $entries = ldap_get_entries($connection, $search);
+        if ($entries['count'] === 0) {
+            $this->logger->warning("No user found with CN '{$cn}'.");
+            ldap_unbind($connection);
+            return null;
+        }
+
+        $userDn = $entries[0]['dn'];
+
+        $this->logger->info("User with CN '{$cn}' found successfully.");
+        // $this->logger->info(json_encode(array_keys($entries[0])));
+
+        // Return user details as an associative array
+        ldap_unbind($connection);
+        return array($userDn);
+    }
+
 }

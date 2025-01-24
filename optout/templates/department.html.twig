@@ -16,7 +16,8 @@
                         {% if not readonly %}
                             <div class="col-md-8">
                                 <p>Based on the current <a href="http://coursetimetable.uct.ac.za" title="UCT Timetables Site">venue bookings</a>, the following {{st.course}} are eligible for automated lecture recording set up.</p>
-                                <p>Please check and update the course convenor details below. A course-level opt-out email will be sent to {{st.all}} by <strong>{{date_course|date("l, d F")}}</strong>. Should the course convenor information not be available for a particular course, the course opt-out email will default to the Head of Department.</p>
+                                <p>Please check and update the course convenor details below. Course convenor information is sourced from PeopleSoft. Updating the convenor details here will change the convenor for the purposes of further lecture recording set up, but it is still important that your department administrator updates the convenor records on PeopleSoft.</p>
+                                <p>A course-level opt-out email will be sent to {{st.all}} by <strong>{{date_course|date("l, d F")}}</strong>. Should the course convenor information not be available for a particular course, the course opt-out email will default to the Head of Department.</p>
 
                                 <div style="margin: 15px 0px;"  id="semester-select">
                                     <span style="display: inline-block;padding-right:6px;">Select semester:</span>
@@ -68,19 +69,14 @@
                             {% endif %}
                         {% endif %}
                     {% endif %}
+
                     <div class="table-responsive">
                         <table class="table" id="tbl_s1">
                             <thead>
                                 <tr>
                                     <th style="width: 120px;">Course</th>
-                                    <th>Convenor</th>
-                                    {% if readonly_s1 %}
-                                        <!--th class="text-center">
-                                            {% if date() < date(date_schedule) %}To Schedule{% else %}Scheduled{% endif %}
-                                        </th-->
-                                        <th class="text-center">Vula Site</th>
-                                        <th class="text-center">Lecture Recording</th>
-                                    {% endif %}
+                                    <th style="width: 40%;">Convenor</th>
+                                    <th class="text-center" style="width: 40%;">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -93,48 +89,53 @@
                                                 </strong>
                                             </label>
                                         </td>
-                                        <td>
+                                        <td class="convenor" id="{{course.courseCode}}_convenor">
+                                            <div class="display">
+                                                <strong>{{course.convenor.name}}</strong><br>
+                                                <small class="text-lowercase">{{course.convenor.email}}</small>
+                                            </div>
                                             {% if authenticated.a and (not readonly_s1) %}
-                                                <span>
-                                                    <input id="{{course.courseCode}}_c_name" type="text" placeholder="Course Convenor" value="{{course.convenor.name}}" data-old="{{course.convenor.name}}" data-course="{{course.courseCode}}" data-type="name">
-                                                    <span class="loader">
-                                                        <span></span>
-                                                        <span></span>
-                                                        <span></span>
-                                                    </span>
-                                                </span>
-                                                <span class="edit">
-                                                    <input id="{{course.courseCode}}_c_mail"type="text" placeholder="convenor@uct.ac.za" value="{{course.convenor.email}}" data-old="{{course.convenor.email}}" data-course="{{course.courseCode}}" data-type="email">
-                                                    <span class="loader">
-                                                        <span></span>
-                                                        <span></span>
-                                                        <span></span>
-                                                    </span>
-                                                </span>
-                                            {% else %}
-                                                <span class="input">{{course.convenor.name}}</span>
-                                                <span class="input">{{course.convenor.email}}</span>
+                                            <div class="btn">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-course="{{course.courseCode}}" data-target="#changeModal">
+                                                    <i class="fas fa-user-edit"></i> Change
+                                                </button>
+                                            </div>
+                                            <div class="auto" style="display:none">
+                                                <input type="text" class="form-control"
+                                                        id="{{course.courseCode}}_c_eid"
+                                                        data-old="{{course.convenor.eid}}"
+                                                        data-value="{{course.convenor.eid}}"
+                                                        data-course="{{course.courseCode}}"
+                                                        data-type="eid"/>
+                                                <button id="{{course.courseCode}}_c_cancel" data-course="{{course.courseCode}}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="processing" style="display:none">
+                                                <div class="text-info loading">
+                                                    <i class="fas fa-sync fa-spin"></i>
+                                                    <span>Updating...</span>
+                                                </div>
+                                            </div>
                                             {% endif %}
                                         </td>
-                                        {% if readonly_s1 %}
-                                            <!--td class="text-center">
-                                                {% if details.is_optout %}
-                                                    <span class="no">No</span>
-                                                {% else %}
-                                                    {% if course.optoutStatus == "1" %}
-                                                        <span class="no">No</span>
-                                                    {% else %}
-                                                        <span class="yes">Yes</span>
-                                                    {% endif %}
-                                                {% endif %}
-                                            </td-->
-                                            <td class="text-center">
-                                                {% if course.hasVulaSite %}<span class="yes">Yes</span>{% else %}<span class="no">No</span>{% endif %}
-                                            </td>
-                                            <td class="text-center">
-                                            {% if course.hasOCSeries %}<span class="yes">Yes</span>{% else %}<span class="no">No</span>{% endif %}
-                                            </td>
-                                        {% endif %}
+                                        <td class="text-center">
+                                            {% if course.hasVulaSite %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Vula Site">
+                                                    <img src="/optout/public/build/images/vula.png" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                            {% if course.hasOCSeries %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Lecture Recording Series">
+                                                    <img src="/optout/public/build/images/logo-opencast.png" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                            {% if course.hasAmathubaSite %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Amathuba Site">
+                                                    <img src="/optout/public/build/images/amathuba.svg" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -143,14 +144,8 @@
                             <thead>
                                 <tr>
                                     <th style="width: 120px;">Course</th>
-                                    <th>Convenor</th>
-                                    {% if readonly_s2 %}
-                                        <!--th class="text-center">
-                                            {% if date() < date(date_schedule) %}To Schedule{% else %}Scheduled{% endif %}
-                                        </th-->
-                                        <th class="text-center">Vula Site</th>
-                                        <th class="text-center">Lecture Recording</th>
-                                    {% endif %}
+                                    <th style="width: 40%;">Convenor</th>
+                                    <th class="text-center" style="width: 40%;">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -163,48 +158,53 @@
                                                 </strong>
                                             </label>
                                         </td>
-                                        <td>
+                                        <td class="convenor" id="{{course.courseCode}}_convenor">
+                                            <div class="display">
+                                                <strong>{{course.convenor.name}}</strong><br>
+                                                <small class="text-lowercase">{{course.convenor.email}}</small>
+                                            </div>
                                             {% if authenticated.a and (not readonly_s2) %}
-                                                <span>
-                                                    <input id="{{course.courseCode}}_c_name" type="text" placeholder="Course Convenor" value="{{course.convenor.name}}" data-old="{{course.convenor.name}}" data-course="{{course.courseCode}}" data-type="name">
-                                                    <span class="loader">
-                                                        <span></span>
-                                                        <span></span>
-                                                        <span></span>
-                                                    </span>
-                                                </span>
-                                                <span class="edit">
-                                                    <input id="{{course.courseCode}}_c_mail"type="text" placeholder="convenor@uct.ac.za" value="{{course.convenor.email}}" data-old="{{course.convenor.email}}" data-course="{{course.courseCode}}" data-type="email">
-                                                    <span class="loader">
-                                                        <span></span>
-                                                        <span></span>
-                                                        <span></span>
-                                                    </span>
-                                                </span>
-                                            {% else %}
-                                                <span class="input">{{course.convenor.name}}</span>
-                                                <span class="input">{{course.convenor.email}}</span>
+                                            <div class="btn">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-course="{{course.courseCode}}" data-target="#changeModal">
+                                                    <i class="fas fa-user-edit"></i> Change
+                                                </button>
+                                            </div>
+                                            <div class="auto" style="display:none">
+                                                <input type="text" class="form-control"
+                                                        id="{{course.courseCode}}_c_eid"
+                                                        data-old="{{course.convenor.eid}}"
+                                                        data-value="{{course.convenor.eid}}"
+                                                        data-course="{{course.courseCode}}"
+                                                        data-type="eid"/>
+                                                <button id="{{course.courseCode}}_c_cancel" data-course="{{course.courseCode}}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="processing" style="display:none">
+                                                <div class="text-info loading">
+                                                    <i class="fas fa-sync fa-spin"></i>
+                                                    <span>Updating...</span>
+                                                </div>
+                                            </div>
                                             {% endif %}
                                         </td>
-                                        {% if readonly_s2 %}
-                                            <!--td class="text-center">
-                                                {% if details.is_optout %}
-                                                    <span class="no">No</span>
-                                                {% else %}
-                                                    {% if course.optoutStatus == "1" %}
-                                                        <span class="no">No</span>
-                                                    {% else %}
-                                                        <span class="yes">Yes</span>
-                                                    {% endif %}
-                                                {% endif %}
-                                            </td-->
-                                            <td class="text-center">
-                                                {% if course.hasVulaSite %}<span class="yes">Yes</span>{% else %}<span class="no">No</span>{% endif %}
-                                            </td>
-                                            <td class="text-center">
-                                            {% if course.hasOCSeries %}<span class="yes">Yes</span>{% else %}<span class="no">No</span>{% endif %}
-                                            </td>
-                                        {% endif %}
+                                        <td class="text-center">
+                                            {% if course.hasVulaSite %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Vula Site">
+                                                    <img src="/optout/public/build/images/vula.png" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                            {% if course.hasOCSeries %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Lecture Recording Series">
+                                                    <img src="/optout/public/build/images/logo-opencast.png" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                            {% if course.hasAmathubaSite %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Amathuba Site">
+                                                    <img src="/optout/public/build/images/amathuba.svg" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -243,7 +243,12 @@
                     <div class="modal-body">
                         <div class="form-group row">
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" name="eid" id="eid" value="" placeholder="User ID">
+                                <p style="margin-bottom: 0px;">Please login with your staff number (without @wf.uct.ac.za) and network password:</p>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="eid" id="eid" value="" placeholder="Staff Number">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -260,10 +265,11 @@
             </div>
         </div>
     </div>
-    <script src="{{ asset('/optout/assets/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('/optout/assets/js/tmpl.js') }}"></script>
-    <script src="{{ asset('/optout/assets/js/moment.min.js') }}"></script>
-    <script src="{{ asset('/optout/assets/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/tmpl.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/moment.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/jquery.autocomplete.min.js') }}"></script>
     <script>
         $(function() {
             $('#semester-select > a').on('click',function(event){
@@ -286,89 +292,117 @@
         var changeTimer = false, field = null;
 
         $(function() {
-            $('#tbl_s1, #tbl_s2').on('focusin','input',function(event){
-                $(this).removeClass('done err');
+
+            $('.convenor > .btn > button').on('click', function(event){
+                event.preventDefault();
+                const _btn = $(this);
+                $(`#${_btn.data('course')}_convenor .display, #${_btn.data('course')}_convenor .btn, #${_btn.data('course')}_convenor .processing`).hide();
+                $(`#${_btn.data('course')}_convenor .auto`).show();
+                $(`#${_btn.data('course')}_c_eid`).val('').focus();
             });
 
-            $('#tbl_s1, #tbl_s2').on('change','input',function(event){
-                    if (changeTimer !== false) clearTimeout(changeTimer);
-                    field = $(this);
-
-                    //changeTimer = setTimeout(function(){
-
-                        var d = [{"course": field.data('course'),
-                                 "changes": [{
-                                     "field": field.data('type') == 'name' ? 'convenorName' : 'convenorEmail',
-                                     "from": field.data('old'), "to": field.val()}]}],
-                            valid = true;
-                        field
-                            .parent()
-                            .removeClass('done err updating')
-                            .removeAttr('data-errortext');
-
-                        if (field.data('type') === 'email') {
-                            email_address = $(this);
-                            email_regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i;
-                            if(!email_regex.test(email_address.val())){
-                                mailValidationError(field);
-                                valid = false;
-                            }
-                        }
-
-                        if (valid) {
-                            field.parent().addClass('updating');
-                            $.ajax({
-                                headers: {"x-entity-hash": "{{hash}}"},
-                                url: "/optout/api/v0/dept/{{dept}}",
-                                method: 'patch',
-                                data: JSON.stringify(d)
-                            }).done(function() {
-                                updateSuccess(field);
-                            }).fail(function(xhr) {
-                                if (xhr.status === 409 && xhr.responseJSON) {
-                                    //If updated value is equal to server's current record for field, show a success
-                                    var fieldName = field.data('type');
-                                    if (xhr.responseJSON[0].convenor[fieldName] === field.val()) {
-                                        return updateSuccess(field);
-                                    }
-                                }
-
-                                //otherwise, show an error message so user knows why update could not take place
-                                updateError(field, xhr);
-                            }).always(function() {
-                                field.parent().removeClass('updating');
-                            });
-                        }
-                    //    changeTimer = false;
-                    //}, 300);
+            $('.convenor > .auto > button').on('click', function(event){
+                event.preventDefault();
+                const _btn = $(this);
+                $(`#${_btn.data('course')}_convenor .display, #${_btn.data('course')}_convenor .btn`).show();
+                $(`#${_btn.data('course')}_convenor .auto, #${_btn.data('course')}_convenor .processing`).hide();
             });
 
-            function updateSuccess(field) {
-                field
-                    .data('old', field.val())
-                    .parent()
-                        .addClass( "done" );
-                setTimeout(function() {
-                    field
-                        .parent()
-                        .removeClass('done');
-                }, 5000);
-            }
+            $('.convenor > .auto > input').autocomplete({
+                lookup: function (query, done) {
+                    $.get(`/optout/search/d2l/list/${query}`, function(data, status){
+                        try {
+                            var result = {
+                                suggestions: data['data'].map(function(el) {
+                                    return { 'value': `${el['name']}, ${el['mail']} (${el['CN']})`, 'data': el };
+                                })
+                            };
+                            done(result);
+                       } catch ({ name, message }) {
+                            // console.log(name); // "TypeError" - not needed
+                       }
+                    })
+                    .fail(function() {
+                        console.log('Could not search for users');
+                    })
+                },
+                lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
+                    var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
+                    return re.test(suggestion.value);
+                },
+                onSelect: function(suggestion) {
+                    const _el = $(this);
+                    let _data = suggestion.data;
+                        _data['course'] = _el.data('course');
+                        _data['invalid'] = false;
+                    _el.data('value', _data['CN']);
+                    triggerSubmitData(_data);
+                },
+                onInvalidateSelection: function() {
+                    const _el = $(this);
+                    triggerSubmitData({ invalid: true, course: _el.data('course') });
 
-            function updateError(field, serverResponse) {
-                field
-                    .parent()
-                    .addClass('err')
-                    .attr('data-errortext', 'Already updated. Please refresh to view the latest changes.');
-            }
+                    console.log('onInvalidateSelection');
+                }
+            });
 
-            function mailValidationError(field, serverResponse) {
-                field
-                    .parent()
-                    .addClass('err')
-                    .attr('data-errortext', 'Please enter a valid e-mail address.');
+            // Function to handle async submission
+            function triggerSubmitData(data) {
+                console.log(data);
+
+                if (data['invalid']) {
+                    $(`#${data['course']}_convenor .display, #${data['course']}_convenor .btn`).show();
+                    $(`#${data['course']}_convenor .auto, #${data['course']}_convenor .processing`).hide();
+                    return;
+                }
+
+                $(`#${data['course']}_convenor .display, #${data['course']}_convenor .btn, #${data['course']}_convenor .auto`).hide();
+                $(`#${data['course']}_convenor .processing`).show();
+                submitDataAsync(data)
+                    .then(() => {
+                        console.log('Data submission complete');
+                        $(`#${data['course']}_convenor .display`).html(`<div class="display">`+
+                                `<strong>${data['name']}</strong><br>`+
+                                `<small class="text-lowercase">${data['mail']}</small>`+
+                            `</div>`);
+                    })
+                    .catch((error) => {
+                        console.log('Data submission failed:', error);
+                    })
+                    .finally(() => {
+                        $(`#${data['course']}_convenor .display, #${data['course']}_convenor .btn`).show();
+                        $(`#${data['course']}_convenor .auto, #${data['course']}_convenor .processing`).hide();
+                    });
             }
         });
+
+        function submitDataAsync(data) {
+            const _el = $(`#${data['course']}_c_eid`);
+            let d = [{"course": data['course'],
+                    "changes": [{
+                        "field": 'convenorEid',
+                        "from": _el.data('old'), "to": _el.data('value')}]}];
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    headers: {"x-entity-hash": "{{hash}}"},
+                    url: "/optout/api/v0/dept/{{dept}}",
+                    type: 'PATCH',
+                    data: JSON.stringify(d),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log('Success:', response);
+                        resolve(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error:', error);
+                        reject(error);
+                    },
+                    complete: function () {
+                        console.log('complete');
+                    }
+                });
+            });
+        }
     </script>
     {% endif %}
 {% include 'footer.html' %}

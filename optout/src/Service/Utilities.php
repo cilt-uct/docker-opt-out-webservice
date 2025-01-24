@@ -150,6 +150,7 @@ class Utilities
             if ($stmt->rowCount() === 0) {
                 $result = [
                     'success' => 0,
+                    'hash' => $hash,
                     'err' => 'The reference was not found, please contact <a href="mailto:cilt-helpdesk@uct.ac.za?subject=Automated Setup of Lecture Recording (REF: '.$hash.')&body=Hi Vula Help Team,%0D%0A%0D%0AThe view page with the reference ('.$hash.') returns an error.%0D%0A%0D%0APlease fix this and get back to me.%0D%0A%0D%0AThanks you,%0D%0A" title="Cilt Help Desk">cilt-helpdesk@uct.ac.za</a>.'];
             }
 

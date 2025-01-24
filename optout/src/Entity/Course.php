@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Symfony\Component\Dotenv\Dotenv;
+use App\Service\D2LWebService;
 use App\Service\OCRestService;
 use App\Service\SakaiWebService;
 use App\Service\Utilities;
@@ -59,12 +60,13 @@ class Course extends AbstractOrganisationalEntity implements HashableInterface
         $workflow = (new Workflow)->getWorkflow();
 
         $qry = "select A.course_code, A.term, A.dept, A.secret, A.start_date, A.end_date,
-                if(A.acad_career = 'UGRD' and opencast_venues.campus_code in (". Course::ELIGIBLE ."), 1, 0) as eligble,
-                if(A.course_code REGEXP '". Course::SEM1 ."', 's1', if(`sn`.course_code REGEXP '". Course::SEM2 ."', 's2', 's0')) as sem,
-                ifnull(C.convenor_name, A.convenor_name) as convenor_name,
-                ifnull(C.convenor_eid, A.convenor_eid) as convenor_eid, D.is_optout, D.updated_at, D.updated_by,
-                ifnull(C.convenor_email, (select E.email from timetable.view_sakai_users E where C.convenor_eid = E.eid or (C.convenor_eid is null and A.convenor_eid = E.eid))) as email
-                    from timetable.ps_courses A
+                    if(A.acad_career = 'UGRD' and opencast_venues.campus_code in (". Course::ELIGIBLE ."), 1, 0) as eligble,
+                    if(A.course_code REGEXP '". Course::SEM1 ."', 's1', if(`sn`.course_code REGEXP '". Course::SEM2 ."', 's2', 's0')) as sem,
+                    ifnull(C.convenor_name, A.convenor_name) as convenor_name,
+                    ifnull(C.convenor_eid, A.convenor_eid) as convenor_eid,
+                    D.is_optout, D.updated_at, D.updated_by,
+                    ifnull(C.convenor_email, (select E.email from timetable.view_sakai_users E where C.convenor_eid = E.eid or (C.convenor_eid is null and A.convenor_eid = E.eid))) as email
+                from timetable.ps_courses A
                     left join timetable.course_updates C on A.course_code = C.course_code and C.year = :year and C.workflow_id = :workflow_id
                     left join timetable.course_optout D on A.course_code = D.course_code and D.year = :year and D.workflow_id = :workflow_id
                     left join timetable.sn_timetable_versioned `sn` on `sn`.course_code = A.course_code and `sn`.term = A.term
@@ -82,11 +84,6 @@ class Course extends AbstractOrganisationalEntity implements HashableInterface
             throw new \Exception("invalid hash");
         }
 
-        $this->convenor = [
-            'eid' => $result[0]['convenor_eid'],
-            'name' => $result[0]['convenor_name'],
-            'email' => $result[0]['email']
-        ];
         $this->optoutStatus = $result[0]['is_optout'];
         $this->updatedAt = $result[0]['updated_at'];
         $this->updatedBy = $result[0]['updated_by'];
@@ -98,9 +95,23 @@ class Course extends AbstractOrganisationalEntity implements HashableInterface
         if ($this->fetchFromREST) {
             $vula = new SakaiWebService();
             $ocService = new OCRestService();
+            $d2l = new D2LWebService();
 
             $this->hasVulaSite = $vula->hasProviderId($this->entityCode, $this->year);
             $this->hasOCSeries = $ocService->hasOCSeries($this->entityCode, $this->year);
+            $this->hasAmathubaSite = $d2l->hasSite($this->entityCode, $this->year);
+
+            $this->convenor = $d2l->getConvenor($result[0]['convenor_eid']);
+        } else {
+            $this->convenor = [
+                'eid' => $result[0]['convenor_eid'],
+                'title' => NULL,
+                'name' => $result[0]['convenor_name'],
+                'email' => $result[0]['email']
+            ];
+            $this->hasVulaSite = FALSE;
+            $this->hasOCSeries = FALSE;
+            $this->hasAmathubaSite = FALSE;
         }
 
         $this->mails = $this->fetchMails();
@@ -131,7 +142,7 @@ class Course extends AbstractOrganisationalEntity implements HashableInterface
         $fields = ['courseCode', 'dept', 'year', 'convenor', 'optoutStatus', 'updatedAt', 'updatedBy', 'eligble', 'semester'];
 
         if ($this->fetchFromREST) {
-            array_push ($fields, "hasVulaSite", "hasOCSeries");
+            array_push ($fields, "hasVulaSite", "hasOCSeries", "hasAmathubaSite");
         }
 
         $details = ['hash' => $this->getHash()];

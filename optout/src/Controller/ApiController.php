@@ -7,6 +7,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Annotation\Route;
+
+use Psr\Log\LoggerInterface;
+
 use App\Entity\Course;
 use App\Entity\Department;
 use App\Entity\OpencastRetentionBatch;
@@ -14,6 +17,8 @@ use App\Entity\OrganisationalEntityFactory;
 use App\Entity\User;
 use App\Entity\OpencastSeries;
 use App\Entity\Workflow;
+
+use App\Service\D2LWebService;
 use App\Service\LDAPService;
 use App\Service\OCRestService;
 use App\Service\SakaiWebService;
@@ -21,94 +26,127 @@ use App\Service\Utilities;
 
 class ApiController extends Controller
 {
+    private $d2l;
+    private $oc;
+    private $ldapService;
+    private $logger;
 
-  /**
-   * @Route("/search/{searchStr}")
-   */
-  public function search($searchStr, Request $request) {
-    try {
-      $isUctEmail = filter_var($searchStr, FILTER_VALIDATE_EMAIL) && strpos($searchStr, '@uct.ac.za') > -1;
-      $isNumeric = is_numeric($searchStr);
-
-      $result = [];
-      if ($isUctEmail) {
-          $result['vula'] = $this->searchVula(null, null, $searchStr);
-          $result['ldap'] = $this->searchLdap($result['vula']['username']);
-      }
-      else if ($isNumeric) {
-          $result['ldap'] = $this->searchLdap($searchStr);
-          $result['vula'] = $this->searchVula($result['ldap'][0]['cn'], null, null);
-      }
-
-      return new Response(
-        json_encode($result),
-        200,
-        [
-          'Content-Type' => 'application/json'
-        ]
-      );
-    } catch (\Exception $e) {
-      $response = [
-        "text" => "Server error",
-        "statusCode" => 500,
-        "contentType" => [
-          'Content-Type' => 'text/plain'
-        ]
-      ];
-      switch($e->getMessage()) {
-        case "no such user":
-          $response['text'] = 'User not found';
-          $response['statusCode'] = 404;
-      }
-
-      return new Response($response['text'], $response['statusCode'], $response['contentType']);
+    public function __construct(D2LWebService $d2l, OCRestService $oc, LDAPService $ldapService, LoggerInterface $logger)
+    {
+        $this->d2l = $d2l;
+        $this->oc = $oc;
+        $this->ldapService = $ldapService;
+        $this->logger = $logger;
     }
-  }
 
-  /**
-   * @Route("/search/vula/{searchStr}")
-   */
-  public function searchVulaEndpoint($searchStr, Request $request) {
-    try {
-      $ldap = [];
-      $vula = $this->searchVula(null, null, $searchStr);
-      if (isset($vula['username'])) {
-        $ldap = $this->searchLdap($vula['username']);
-      }
+    /**
+     * @Route("/search/{searchStr}")
+     */
+    public function search($searchStr, Request $request) {
+        try {
+        $isUctEmail = filter_var($searchStr, FILTER_VALIDATE_EMAIL) && strpos($searchStr, '@uct.ac.za') > -1;
+        $isNumeric = is_numeric($searchStr);
 
-      return new Response(
-        json_encode(['vula' => $vula, 'ldap' => $ldap]),
-        200,
-        [
-          'Content-Type' => 'application/json'
-        ]
-      );
-    } catch (\Exception $e) {
-      $response = [
-        "text" => "Server error: ". $e->getMessage(),
-        "statusCode" => 500,
-        "contentType" => [
-          'Content-Type' => 'text/plain'
-        ]
-      ];
-      switch($e->getMessage()) {
-        case "no such user":
-          $response['text'] = 'User not found';
-          $response['statusCode'] = 404;
-      }
+        $result = [];
+        if ($isUctEmail) {
+            $result['vula'] = $this->searchVula(null, null, $searchStr);
+            $result['ldap'] = $this->ldapService->findUserByCN($result['vula']['username']);
+            $result['d2l'] = $this->d2l->search($searchStr);
+        }
+        else if ($isNumeric) {
+            $result['ldap'] = $this->ldapService->findUserByCN($searchStr);
+            $result['vula'] = $this->searchVula($searchStr, null, null);
+            $result['d2l'] = $this->d2l->search($searchStr);
+        }
 
-      return new Response($response['text'], $response['statusCode'], $response['contentType']);
+        $this->logger->info(json_encode($result));
+
+        return new Response(
+            json_encode($result),
+            200,
+            [
+            'Content-Type' => 'application/json'
+            ]
+        );
+        } catch (\Exception $e) {
+        $response = [
+            "text" => "Server error",
+            "statusCode" => 500,
+            "contentType" => [
+            'Content-Type' => 'text/plain'
+            ]
+        ];
+        switch($e->getMessage()) {
+            case "no such user":
+            $response['text'] = 'User not found';
+            $response['statusCode'] = 404;
+        }
+
+        return new Response($response['text'], $response['statusCode'], $response['contentType']);
+        }
     }
-  }
 
-  private function searchLdap($searchStr) {
-    $ldap = new LDAPService();
-    return $ldap->match($searchStr);
-  }
+    /**
+     * @Route("/search/vula/{searchStr}")
+     */
+    public function searchVulaEndpoint($searchStr, Request $request) {
+        try {
+            $ldap = [];
+            $vula = $this->searchVula(null, null, $searchStr);
+            if (isset($vula['username'])) {
+                $ldap = $this->searchLdap($vula['username']);
+            }
 
-  private function searchVula($eid, $ip = null, $email = null) {
-    return (new User($eid, $ip, $email))->getDetails();
-  }
+            return new Response(
+                json_encode(['vula' => $vula, 'ldap' => $ldap]),
+                    200,
+                [
+                    'Content-Type' => 'application/json'
+                ]
+            );
+        } catch (\Exception $e) {
+            $response = [
+                "text" => "Server error: ". $e->getMessage(),
+                "statusCode" => 500,
+                "contentType" => [
+                'Content-Type' => 'text/plain'
+                ]
+            ];
+            switch($e->getMessage()) {
+                case "no such user":
+                $response['text'] = 'User not found';
+                $response['statusCode'] = 404;
+            }
+
+            return new Response($response['text'], $response['statusCode'], $response['contentType']);
+        }
+    }
+
+    /**
+     * @Route("/search/d2l/list/{searchStr}")
+     */
+    public function listD2L($searchStr, Request $request) {
+        return new Response(
+            json_encode($this->d2l->list($searchStr)),
+                200,
+            [
+                'Content-Type' => 'application/json'
+            ]
+        );
+        return ;
+    }
+
+    private function searchLdap($searchStr) {
+        return $this->ldapService->findUserByCN($searchStr);
+    }
+
+    private function searchVula($eid, $ip = null, $email = null) {
+        return (new User($eid, $ip, $email))->getDetails();
+    }
+
+    //   private function searchD2L($searchStr) {
+    //     return (new User($eid, $ip, $email))->getDetails();
+    //   }
 
   /**
    * @Route ("/me")
@@ -323,8 +361,11 @@ class ApiController extends Controller
     $data = json_decode($request->getContent(), true);
     $workflow = (new Workflow)->getWorkflow();
 
+
+
     try {
       $course = new Course($courseCode, $courseHash, null, false);
+      return new Response(json_encode($course->getDetails()), 201);
       $updateStatus = $course->updateOptoutStatus($session->get('username'), $data, $workflow['oid']);
     } catch(\Exception $e) {
       $statusCode = 500;
@@ -474,10 +515,9 @@ class ApiController extends Controller
     $password = $request->request->get('password');
 
     try {
-      if ($ldap->authenticate($user, $password)) {
-        $details = $ldap->match($user);
+      if ($this->ldapService->authenticate($user, $password)) {
         $session = $request->hasSession() ? $request->getSession() : new Session();
-        $session->set('username', $details[0]['cn']);
+        $session->set('username', $user);
         return new Response("OK", 200);
       }
 

@@ -44,8 +44,8 @@ header img.navbar-brand{
   height: 75px;
 }
 header img.navbar-logo{
-  height: 90px; 
-  position: relative; 
+  height: 90px;
+  position: relative;
   top: -4px;
   right: 44px;
 }
@@ -623,8 +623,8 @@ header img.navbar-logo{
 	display:inline-block;
 	position:absolute;
 	left:50%;
-  margin-left:-10px;
-  opacity: 0.7;
+    margin-left:-10px;
+    opacity: 0.7;
 	-webkit-animation:3s infinite ease-in-out;
 	-moz-animation:3s infinite ease-in-out;
 	-o-animation:3s infinite ease-in-out;
@@ -1392,7 +1392,7 @@ aside li > a:active {
   color: #444;
   margin: 0;
 }
- 
+
 .graph_container > div .text-L,
 .graph_container > div .text-M,
 .graph_container > div .text-S {
@@ -1429,7 +1429,7 @@ aside li > a:active {
 .graph_container > .div6 { grid-area: 3 / 1 / 4 / 7; }
 
 h3#result_title {
-  margin-bottom: 2px; 
+  margin-bottom: 2px;
 }
 
 .header_grid {
@@ -1476,7 +1476,7 @@ h3#result_title {
   line-height: 2rem;
 }
 
-.header_grid > div .text > span { 
+.header_grid > div .text > span {
   display: block;
 }
 .header_grid > div .text > span:first-child { font-size: 3rem; }
@@ -1583,3 +1583,46 @@ h3#result_title {
   font-weight: normal;
 }
 
+/*// autocomplete -  //////////////////////*/
+.autocomplete-suggestions {
+    box-sizing: border-box;
+    border: 1px solid #999;
+    background: #FFF;
+    cursor: default;
+    overflow: auto;
+    box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+}
+
+.autocomplete-suggestion {
+    padding: 2px 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    }
+
+.autocomplete-no-suggestion {
+    padding: 2px 5px;
+}
+
+.autocomplete-selected {
+    background: #F0F0F0;
+}
+
+.autocomplete-suggestions strong {
+    font-weight: bold;
+    color: #000;
+}
+
+.autocomplete-group {
+    padding: 2px 5px;
+    font-weight: bold;
+    font-size: 16px;
+    color: #000;
+    display: block;
+    border-bottom: 1px solid #000;
+}
+
+table td.convenor {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

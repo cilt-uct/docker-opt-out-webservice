@@ -18,11 +18,11 @@ class SakaiWebService
     private $uctEndpoint;
 
     public function __construct() {
-        //Get environment variables
+        // Get environment variables
         $dotenv = new Dotenv();
         $dotenv->load('.env');
 
-        //Get credentials
+        // Get credentials
         $this->host = getenv('VULA_HOST');
         $this->user = getenv('VULA_USER');
         $this->pass = getenv('VULA_PASS');
@@ -31,7 +31,7 @@ class SakaiWebService
         $uctSoapUrl = "{$this->host}/sakai-ws/soap/uct?wsdl";
         $loginUrl = "{$this->host}/sakai-ws/soap/login?wsdl";
 
-        //Hold onto SOAP endpoints
+        // Hold onto SOAP endpoints
         $ssl_context = stream_context_create([
             'ssl' => [
                 'verify_peer' => false,
@@ -257,7 +257,6 @@ class SakaiWebService
 
         $eid = $user['organisationalId'];
         $homeSite = $this->getUserHome($eid);
-//        return $homeSite;
         return $this->addOBStool($name, $email, $eid, $homeSite);
     }
 
@@ -311,8 +310,7 @@ class SakaiWebService
     }
 
     //$name = readable name, $display = name (email), $source_id = sakai eid, $context_id = user home site id
-    private function createOCSeries($name, $display, $source_id, $context_id)
-    {
+    private function createOCSeries($name, $display, $source_id, $context_id) {
         $checkSeries = $this->getOCSeries($context_id);
         if ($checkSeries) {
             return $checkSeries;

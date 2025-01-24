@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lecture Recording Automated Setup</title>
     <link rel="stylesheet" href="{{ asset('/optout/assets/bootstrap/css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('/optout/assets/fonts/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('/optout/assets/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('/optout/assets/css/user.css') }}">
 </head>
 
@@ -14,7 +14,7 @@
     <header>
         <nav class="navbar navbar-default">
             <div class="container">
-                <img src="{{ asset('/optout/assets/img/uct.svg') }}" alt="University of Cape Town" class="navbar-brand"/>
+                <img src="{{ asset('/optout/assets/images/uct.svg') }}" alt="University of Cape Town" class="navbar-brand"/>
             </div>
         </nav>
     </header>
@@ -24,7 +24,7 @@
                 <h3><span style="color: #5caad2;">Lecture Recording</span> Automated Setup <small>or</small> Opt-Out</h3>
                 <p class="author"><span class="text-muted">{{created_at|date("F jS \\a\\t g:ia")}}</span></p>
                 <br/>
-                <p style="font-size: 16px;">I acknowledge as the Head of Department (or as a delegated representative), that we will opt out of automated lecture recording setup <br/> for all courses in my department.</p>
+                <p style="font-size: 16px;">I acknowledge as the Head of Department (or as a delegated representative), that we will opt out of automated lecture recording setup <br/> for courses starting this semester in my department.</p>
                 <div class="row">
                     <div class="col-sm-6">
                         <form id="loginForm" method="post" action="/optout/out/{{hash}}">
@@ -38,7 +38,6 @@
         </div>
     </div>
     {% include 'footer.html' %}
-    <script src="{{ asset('/optout/assets/bootstrap/js/bootstrap.min.js') }}"></script>
     <!-- https://www.pexels.com/photo/auditorium-benches-chairs-class-207691/ -->
 </body>
 </html>

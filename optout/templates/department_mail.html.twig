@@ -191,15 +191,20 @@
                                         <div style="line-height: 24px">
                                             <p>Dear {{name}},</p>
                                             <br/>
-                                            <p>Lecture recording facilitates learning and is highly valued by students. At UCT, there has been significant growth in the use of lecture recording. An opt-out provision was introduced, through the <a href="https://www.uct.ac.za/sites/default/files/image_tool/images/328/about/policies/Lecture_Recording_Policy_2017.pdf" title="UCT Lecture Recording Policy (.PDF)">UCT Lecture Recording Policy</a>, to streamline the lecture recording process. Timetabled course lectures will be recorded unless the Head of Department or course convener opts out. This applies to all undergraduate courses taught on Upper and Middle campus in <a href="https://ictsapps.uct.ac.za/lectureRecording.php" title="ICTS: Lecture Recording Venues">equipped teaching venues</a>.</p>
+                                            <p>You are receiving this email as the Head of Department on record in SAP HR for the <strong>{{ dept_name }}</strong>. If you are not the HoD at present, please advise the <a href="mailto:cilt-helpdesk@uct.ac.za?Subject=Incorrect HoD for {{ dept_name }}">CILT Helpdesk</a> and forward this email to the current HoD.</p>
                                             <br/>
-                                            <p>As the Head of Department (HoD), you can choose to opt-out of the <strong>automated setup of lecture recording</strong> for the department ({{ dept_name }}) as a whole. If an HoD does not opt out on behalf of a department, an email will be sent to each course convener, who may opt out for their individual course.</p>
+                                            <p>Lecture recording can provide a valuable supplementary learning resource, and is highly valued by students. At UCT, lecture recording is governed by the <a href="https://www.uct.ac.za/media/10562" title="UCT Lecture Recording Policy (.PDF)">UCT Lecture Recording Policy</a>, which makes provision for opt-out scheduling with the final choice in the hands of the course convenor. Opt-out scheduling was suspended in 2020 due to Covid, and is now being reintroduced for courses on Amathuba.</p>
                                             <br/>
-                                            <p>By {{date|date("l, d F")}}, either the HoD or a delegated representative must:</p>
+                                            <p>In 2025, timetabled course lectures will be recorded unless the Head of Department or course convener opts out. This applies to all undergraduate courses taught on Upper and Middle campus in <a href="https://ictsapps.uct.ac.za/lectureRecording.php" title="ICTS: Lecture Recording Venues">equipped teaching venues</a>.</p>
+                                            <br/>
+                                            <p>As the Head of Department (HoD), you can choose to opt-out of the <strong>automated setup of lecture recording</strong> for the department ({{ dept_name }}) as a whole. If an HoD does not opt out on behalf of a department, an email will be sent to each course convener, who may opt out for their individual course. Regardless of opt-out status, lecture recording for an individual course may still be set up and managed self-service through ServiceNow and Amathuba.</p>
+                                            <br/>
+                                            <p>By <strong>{{date|date("l, d F")}}</strong>, either the HoD or a delegated representative must:</p>
                                             <ol type="a">
-                                                <li>Indicate if your department wishes to opt out of the automated lecture recording setup. See the "Opt-out for the department" link below.</li>
-                                                <li>Confirm course convener details under the “View Courses” link if your department is not opting out.</li>
+                                                <li>Confirm course convener details under the “Update Course Details” link, OR</li>
+                                                <li>Opt out of automated scheduling for the department as a whole, by clicking the "Opt-out for the department" button below.</li>
                                             </ol>
+                                            <p>If you take no action by the due date, emails will be sent to each course convenor as per the convenor records captured in PeopleSoft, with the opportunity to opt out of automated scheduling for their course. Where convenor details are missing, you will receive emails for these courses as Head of Department.</p>
                                             <br/>
                                             <p><strong><u>Opt-out process</u></strong></p>
                                             <br/>
@@ -276,7 +281,7 @@
 
 
                                         <div style="line-height: 26px;">
-                                            <a href="{{view_link}}" style="color: #ffffff; text-decoration: none;">View Courses</a>
+                                            <a href="{{view_link}}" style="color: #ffffff; text-decoration: none;">Update Course Details</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -297,18 +302,18 @@
                                 <tr>
                                     <td align="left" style="color: #333; font-size: 14px; font-family: 'Work Sans', Calibri, sans-serif; line-height: 24px;">
                                         <div style="line-height: 24px">
-                                            <p>Further communication will be sent out to course conveners, so we request that you check and update any course convener details in the link above. Should the course convener information not be available by {{date|date("l, d F")}} for a particular course, the course opt-out email will default to you as Head of Department.</p>
+                                            <p>Further communication will be sent out to course conveners, so we request that you check and update any course convener details in the link above. Should the course convener information not be available by <strong>{{date|date("l, d F")}}</strong> for a particular course, the course opt-out email will default to you as Head of Department.</p>
                                             <br/>
                                             <p><strong><u>More information</u></strong></p>
                                             <ul type="circle">
-                                                <li>For participating departments, the automated lecture recording setup will require a Vula course site to be created at least 3 working days prior to the start of the semester.</li>
+                                                <li>For participating departments, the automated lecture recording setup will require an Amathuba course site to be created at least 3 working days prior to the start of the semester.</li>
                                                 <li>Automated recordings will be scheduled based on the timetable bookings as per the <a href="http://coursetimetable.uct.ac.za" title="UCT Timetables Site">UCT course timetable</a>.</li>
                                                 <li>Please note that the course convener is responsible for ensuring that each person who teaches that particular course is aware that lectures will be recorded.</li>
-                                                <li>The course convener or delegate should adjust the recording schedule in advance, through Vula, to exclude individual lectures from being recorded if consent has not been obtained.</li>
-                                                <li>The lecture recording team will not verify consent for any timetabled lectures and recordings will be automatically published to Vula.</li>
+                                                <li>The course convener or delegate should adjust the recording schedule in advance, through Amathuba, to exclude individual lectures from being recorded if consent has not been obtained.</li>
+                                                <li>The lecture recording team will not verify consent for any timetabled lectures and recordings will be automatically published to Amathuba.</li>
                                                 <li>For more information on lecture recording, please <a href="http://www.cilt.uct.ac.za/cilt/lecture-recording" title="Lecture recording">see here</a>.</li>
                                             </ul>
-                                            <p>If a department or course opts out of the automated setup, the <a href="http://www.cilt.uct.ac.za/cilt/lecture-recording#howto" title="Lecture recording: How To">self-service setup</a> of recordings is still available in Vula.</p>
+                                            <p>If a department or course opts out of the automated setup, the <a href="http://www.cilt.uct.ac.za/cilt/lecture-recording#howto" title="Lecture recording: How To">self-service setup</a> of recordings is still available in Amathuba.</p>
                                             <br/>
                                             <p>For any queries, please feel free to contact us.</p>
                                             <br/>

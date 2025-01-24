@@ -1,6 +1,6 @@
 # app/config/config.yml
 monolog:
-    channels: ['ldap']  # Optional: create a separate channel for LDAP logs
+    # channels: ['ldap']  # Optional: create a separate channel for LDAP logs
     handlers:
         # Log all messages to a file
         main:
@@ -8,9 +8,9 @@ monolog:
             path: "%kernel.logs_dir%/prod.log"
             level: info
 
-        # Optional: Create a separate file for LDAP-specific logs
-        ldap:
-            type: stream
-            path: "%kernel.logs_dir%/ldap.log"
-            level: debug
-            channels: ['ldap']
+        # # Optional: Create a separate file for LDAP-specific logs
+        # ldap:
+        #     type: stream
+        #     path: "%kernel.logs_dir%/ldap.log"
+        #     level: debug
+        #     channels: ['ldap']

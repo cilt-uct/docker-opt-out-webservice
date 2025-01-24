@@ -14,11 +14,19 @@
                             <div class="col-md-10">
                                 <p>The pre-checks for course <strong>{{course}}</strong>, found the following:</p>
                                 <div style="padding-left: 2em;">
-                                    {% if hasVulaSite %}
+                                    {% if (hasVulaSite) or (hasAmathubaSite) %}
+                                        {% if hasVulaSite %}
                                         <div class="alert alert-success" role="alert">
                                             <i class="far fa-3x fa-check-circle success"></i>
                                             <span>There is a Vula site associated with this course.</span>
                                         </div>
+                                        {% endif %}
+                                        {% if hasAmathubaSite %}
+                                        <div class="alert alert-success" role="alert">
+                                            <i class="far fa-3x fa-check-circle success"></i>
+                                            <span>There is a Amathuba site associated with this course.</span>
+                                        </div>
+                                        {% endif %}
                                         {% if not hasOCSeries %}
                                             <div class="alert alert-info" role="alert">
                                                 <i class="far fa-3x fa-check-circle info"></i>
@@ -40,8 +48,8 @@
                                     {% else %}
                                         <div class="alert alert-danger" role="alert">
                                             <i class="far fa-3x fa-times-circle danger zero" style="top: 10px; padding-bottom: 40px;"></i>
-                                            <span>There seems to be no Vula site associated with this course code.<br/>
-                                            To use automatic scheduling {% if (timetable is not empty) %}(for the timetable shown below){% endif %} please create a Vula site for {{course}}, make sure that it is published and/or the class list is linked correctly; before {{date_schedule|date("l, d F Y")}}.</span>
+                                            <span>There seems to be no Amathuba site associated with this course code.<br/>
+                                            To use automatic scheduling {% if (timetable is not empty) %}(for the timetable shown below){% endif %} please create a Amathuba site for {{course}}, make sure that it is published and/or the class list is linked correctly; before {{date_schedule|date("l, d F Y")}}.</span>
                                         </div>
                                     {% endif %}
                                 </div>
@@ -94,13 +102,13 @@
                                 {% if email_case == "5" %}
                                     <div class="alert alert-warning" role="alert">
                                         <i class="far fa-3x fa-times-circle warning" style="margin-top:0.12em"></i>
-                                        <h6 style="margin:0.4em">There are multiple class lists on your <strong>{{course}}</strong> site in Vula, it is not currently possible to do automated setup of your lecture recordings.</h6>
+                                        <h6 style="margin:0.4em">There are multiple class lists on your <strong>{{course}}</strong> site in Amathuba, it is not currently possible to do automated setup of your lecture recordings.</h6>
                                     </div>
                                 {% endif %}
                                 {% if email_case == "6" %}
                                     <div class="alert alert-danger" role="alert">
                                         <i class="far fa-3x fa-times-circle danger" style="margin-top:0.32em"></i>
-                                        <h6 style="margin:0.4em">There is no Vula site associated with <strong>{{course}}</strong>, so the timetable will not be automatically scheduled.</h6>
+                                        <h6 style="margin:0.4em">There is no Amathuba site associated with <strong>{{course}}</strong>, so the timetable will not be automatically scheduled.</h6>
                                     </div>
                                 {% endif %}
                                 {% if email_case == "0" %}

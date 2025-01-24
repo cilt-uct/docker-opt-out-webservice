@@ -242,7 +242,7 @@ class Workflow
                         ( strlen($row['firstname']."".$row['lastname']) < 2 ? "Colleague" : $row['firstname'] ." ". $row['lastname']) .'")');
             }
 
-            array_push($ar, '('. $this->oid .',"ZZZ",'. $this->year .',"stephen.marquard@uct.ac.za","sam.leepan@uct.ac.za;corne.oosthuizen@uct.ac.za","zzzd'.$this->year.'","Stephen Marquard")');
+            array_push($ar, '('. $this->oid .',"ZZZ",'. $this->year .',"stephen.marquard@uct.ac.za","corne.oosthuizen@uct.ac.za","zzzd'.$this->year.'","Stephen Marquard")');
             $insertQry = "INSERT INTO `uct_workflow_email` (`workflow_id`, `dept`, `term`, `mail_to`, `mail_cc`, `hash`, `name`) VALUES ". implode(',', $ar);
 
             $mailStmt = $this->dbh->prepare($insertQry);

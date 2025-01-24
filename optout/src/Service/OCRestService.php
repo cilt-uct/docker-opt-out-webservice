@@ -13,11 +13,11 @@ class OCRestService
     private $ocPass;
 
     public function __construct() {
-        //Get environment variables
+        // Get environment variables
         $dotenv = new Dotenv();
         $dotenv->load('.env');
 
-        //Get credentials
+        // Get credentials
         $this->ocHost = getenv('OC_HOST');
         $this->ocUser = getenv('OC_USER');
         $this->ocPass = getenv('OC_PASS');
@@ -87,19 +87,15 @@ class OCRestService
         return $data;
     }
 
-    private function getOCSeries($courseCode, $year) {
-        $url = $this->ocHost . "/api/series/?filter=textFilter:$courseCode&limit=50&sort=created:DESC";
+    public function getOCSeries($courseCode, $year) {
+        $url = $this->ocHost . "/admin-ng/series/series.json?filter=textFilter:$courseCode*$year&limit=50&offset=0&sort=createdDateTime:DESC";
 
         $series = json_decode($this->getRequest($url), true);
         if (!is_array($series) || !sizeof($series)) {
             return [];
         }
 
-        $series = array_filter($series, function($s) use ($year) {
-                      return strpos($s['created'], $year) > -1;
-                  });
-
-        return $series;
+        return $series['results'];
     }
 
     public function hasOCSeries($courseCode, $year) {
