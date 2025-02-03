@@ -44,7 +44,6 @@ class UIController extends Controller
      */
     public function test($hash, Request $request) {
 
-
         // return new Response((new Workflow)->createCourseMails(), 201);
 
 	    $authenticated = ['a' => false, 'z' => '0'];
@@ -108,6 +107,9 @@ class UIController extends Controller
             $data['authenticated'] = $authenticated;
         }
 
+        // $course = new Course('MAM1012F', null, 2025, true, true); // last could be set to true
+        // return new Response(json_encode($course), 201);
+
         if ($data['course'] === null ) {
             $dept = new Department($data['dept'], $data['hash'], $data['year'], false, false, true);
             $data['details'] = $dept->getDetails();
@@ -134,7 +136,6 @@ class UIController extends Controller
             return $this->render('department.html.twig', $data);
         } else {
             // Course View
-
             $course = new Course($data['course'], $data['hash'], $data['year'], false, true); // last could be set to true
 
             $data['details'] = $course->getDetails();
@@ -252,20 +253,15 @@ class UIController extends Controller
             return $this->render('department.html.twig', $data);
         } else {
             // Course View
-            $vula = new SakaiWebService();
-            $ocService = new OCRestService();
-
-            // $course = new Course($data['course'], $data['hash'], $data['year'], false, false); // last could be set to true
-            $course = new Course('ACC1006F', 'be9abc', '2020', false, false);
-
+            $course = new Course($data['course'], $data['hash'], $data['year'], false, true); // last could be set to true
 
             $data['details'] = $course->getDetails();
             $data['readonly'] = ($now->diff(new \DateTime($data['date_schedule']))->format('%R') == '-');
-            $data['hasVulaSite'] = $vula->hasProviderId($data['course'], $data['year']);
-            $data['hasOCSeries'] = $ocService->hasOCSeries($data['course'], $data['year']);
-            $data['hasAmathubaSite'] = $this->d2l->hasSite($data['course'], $data['year']);
+            $data['hasVulaSite'] = $data['details']['hasVulaSite'];
+            $data['hasOCSeries'] = $data['details']['hasOCSeries'];
+            $data['hasAmathubaSite'] = $data['details']['hasAmathubaSite'];
 
-            $data['isTimetabled'] = $data['hasOCSeries'] ? $course->checkIsTimetabledInOC() : false;
+            $data['isTimetabled'] = $data['details']['hasOCSeries'] ? $course->checkIsTimetabledInOC() : false;
             $data['email_case'] = $data['case'];
             $data['email_type'] = $data['type'];
 

@@ -16,6 +16,7 @@ services:
       - 9000
     volumes:
       - ./optout/:/var/www/html/
+      - ./optout/php.ini:/usr/local/etc/php/conf.d/php.ini
     working_dir: /var/www/html
     environment:
       - APP_ENV=dev
@@ -27,5 +28,5 @@ services:
       - opt-out-network
 
 networks:
-  opt-out-network: # Define a custom network
+  opt-out-network:
     driver: bridge

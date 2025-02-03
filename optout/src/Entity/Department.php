@@ -91,6 +91,11 @@ class Department extends AbstractOrganisationalEntity implements HashableInterfa
                 and `venue`.campus_code in (". Course::ELIGIBLE .")
             order by `ps`.course_code";
 
+        // to test and see which course fails
+        // if ($this->entityCode == 'MAM') {
+        //     $qry = $qry . " limit 1 offset 4";
+        // }
+
         $stmt = $this->dbh->prepare($qry);
         $stmt->execute([':dept' => $this->entityCode, ':year' => $this->year]);
         if ($stmt->rowCount() === 0) {

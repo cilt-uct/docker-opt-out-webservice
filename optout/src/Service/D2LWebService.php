@@ -32,7 +32,7 @@ class D2LWebService
     }
 
     public function getConvenor($searchstr) {
-        $data = $this->search($searchstr);
+
         $default = [
             'eid' => NULL,
             'name' => NULL,
@@ -40,6 +40,11 @@ class D2LWebService
             'title' => NULL
         ];
 
+        if (strlen($searchstr) <= 1) {
+            return $default;
+        }
+
+        $data = $this->search($searchstr);
         if ($data['status'] == 'success') {
             $users = $data['data'];
             $selectedUser = null;

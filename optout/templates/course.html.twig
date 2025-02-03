@@ -70,6 +70,9 @@
                                         </div>
                                     </div>
                                 </div>
+                                {% if hasOCSeries %}
+                                <p><strong><u>Note:</u></strong> If there are already recordings scheduled this will NOT override them and create conflicting recordings.</p>
+                                {% endif %}
                             </div>
                         </div>
                     {% else %}

@@ -118,14 +118,31 @@ class LDAPService
             return null;
         }
 
-        $userDn = $entries[0]['dn'];
+        $filteredResults = [];
+        if (count($entries) > 0) {
+            // $filteredKeys = array_values(array_filter($entries[0], 'is_string'));
+            $filteredKeys = ['dn', 'cn', 'sn', 'title', 'givenname', 'initials', 'displayname', 'department', 'mail'];
+
+            // Loop through filteredKeys and add existing keys to filteredResults
+            for ($i = 0; $i < count($filteredKeys); $i++) {
+                $key = $filteredKeys[$i];
+                if (isset($entries[0][$key])) {
+                    // If value is an array and contains key "0", extract that value
+                    if (is_array($entries[0][$key]) && isset($entries[0][$key]["0"])) {
+                        $filteredResults[$key] = $entries[0][$key]["0"];
+                    } else {
+                        $filteredResults[$key] = $entries[0][$key];
+                    }
+                }
+            }
+        }
 
         $this->logger->info("User with CN '{$cn}' found successfully.");
         // $this->logger->info(json_encode(array_keys($entries[0])));
 
         // Return user details as an associative array
         ldap_unbind($connection);
-        return array($userDn);
+        return $filteredResults;
     }
 
 }

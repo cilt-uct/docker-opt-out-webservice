@@ -259,15 +259,6 @@ class Workflow
     private function createCourseMails(){
         try {
             // get list of courses - only eligible courses
-            // $query = "SELECT distinct(`course`.course_code) as course_code, `course`.dept as dept
-            //     FROM timetable.course_optout `course`
-            //     left join timetable.ps_courses `ps` on `ps`.course_code =  `course`.course_code and `ps`.term = `course`.year
-            //     left join timetable.sn_timetable_versioned `sn` on `sn`.course_code = `course`.course_code and `sn`.term = `course`.year
-            //     left join timetable.dept_optout `deptout` on `course`.`dept` = `deptout`.`dept`
-            //     left join timetable.uct_dept `dept` on `course`.`dept` = `dept`.`dept`
-            //     left join timetable.opencast_venues on `sn`.archibus_id = opencast_venues.archibus_id
-            //     where `dept`.use_dept = 1 and `deptout`.is_optOut = 0 and `ps`.active = 1
-            //         and `ps`.acad_career = 'UGRD' and opencast_venues.campus_code in (". Course::ELIGIBLE .")";
             $query = "SELECT DISTINCT
                             `versioned`.`course_code` AS `course_code`,
                             `ps`.`dept`
@@ -291,6 +282,7 @@ class Workflow
                                 AND (`venues`.`campus_code` IN ('UPPER' , 'MIDDLE'))
                                 AND (`ps`.`acad_career` = 'UGRD'))
                         ORDER BY `versioned`.`course_code`";
+                        // limit 1";
 
             $stmt = $this->dbh->prepare($query);
 
@@ -303,7 +295,7 @@ class Workflow
             $ar = [];
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
 
-                $course = new Course($row['course_code'], null, $this->year, true);
+                $course = new Course($row['course_code'], null, $this->year, true, true);
                 $details = $course->getDetails();
                 $has_oc_series = $course->checkIsTimetabledInOC();
 
