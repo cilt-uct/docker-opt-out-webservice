@@ -16,3 +16,8 @@ https://symfony.com/doc/3.3/frontend/encore/simple-example.html
 # Compile assets, but also minify & optimize them
 ./node_modules/.bin/encore production
 ``
+
+To run through workflow steps:
+```
+https://srvubuclt001.uct.ac.za/optout/monitor
+```

@@ -2,16 +2,20 @@ services:
   nginx:
     container_name: opt-out-nginx
     build: ./nginx/
+    restart: always
     ports:
       - 95:80
     volumes:
         - ./optout/:/var/www/html/
+    depends_on:
+      - php
     networks:
       - opt-out-network
 
   php:
     container_name: opt-out-php
     build: ./optout/
+    restart: always
     expose:
       - 9000
     volumes:

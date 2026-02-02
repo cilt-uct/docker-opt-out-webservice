@@ -23,6 +23,7 @@ class D2LWebService
         $this->pass = getenv('D2L_PASS');
     }
 
+    # Search for a user in middleware DB by partial string (staff number, name or email)
     public function search($searchstr) {
         $data = json_decode($this->makeCurlRequest("/api/db/user/$searchstr"), true);
         if (!is_array($data) || !sizeof($data)) {
@@ -31,6 +32,8 @@ class D2LWebService
         return $data;
     }
 
+    # Search for a convenor by partial string (staff number, name or email)
+    # uses above search function
     public function getConvenor($searchstr) {
 
         $default = [
@@ -83,6 +86,7 @@ class D2LWebService
         return $default;
     }
 
+    # Search for a user in middleware DB by partial string (staff number, name or email)
     public function list($part) {
         if (strlen($part) <= 1) {
             return [];
@@ -94,9 +98,9 @@ class D2LWebService
         return $data;
     }
 
-    public function hasSite($code, $term) {
+    public function getSiteByProviderId(string $courseCode, string $year) {
         try {
-            $data = json_decode($this->makeCurlRequest("/api/course/link/". $code ."_". $term), true);
+            $data = json_decode($this->makeCurlRequest("/api/course/link/". $courseCode ."_". $year), true);
 
             // Check if the status is "success"
             if ($data['status'] !== 'success') {
@@ -108,10 +112,25 @@ class D2LWebService
                 return $entry['is_exists'] === 1;
             });
 
-            return count($filteredData) > 0;
+            $result = array_map(function ($item) {
+                return [
+                    "SITE_ID" => $item["AID"],
+                    "TITLE" => $item["title"]
+                ];
+            }, $filteredData);
+
+            return $result;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            // throw new \Exception($e->getMessage());
+            return [];
         }
+        return [];
+    }
+
+    # Check if a site exists based on course_code
+    # return True if site with course code exists
+    public function hasSite($code, $term) {
+        return count($this->getSiteByProviderId($code, $term)) > 0;
     }
 
     function makeCurlRequest($url, $method = 'GET', $postData = null) {

@@ -19,7 +19,7 @@
             mso-margin-bottom-alt: 0px;
             mso-padding-alt: 0px 0px 0px 0px;
         }
-        
+
         p,
         h1,
         h2,
@@ -30,22 +30,22 @@
             padding-top: 0;
             padding-bottom: 0;
         }
-        
+
         span.preheader {
             display: none;
             font-size: 1px;
         }
-        
+
         html {
             width: 100%;
         }
-        
+
         table {
             font-size: 14px;
             border: 0;
         }
         /* ----------- responsivity ----------- */
-        
+
         @media only screen and (max-width: 640px) {
             /*------ top header ------ */
             .main-header {
@@ -95,7 +95,7 @@
                 height: auto !important;
             }
         }
-        
+
         @media only screen and (max-width: 479px) {
             /*------ top header ------ */
             .main-header {
@@ -191,9 +191,9 @@
                                         <div style="line-height: 24px">
                                             <p>Dear {{name}},</p>
                                             <br/>
-                                            <p>Your course has opted out of lecture recording, so recordings will not be scheduled for your course. If you do wish to use lecture recording, please find further steps <a href="http://www.cilt.uct.ac.za/cilt/lecture-recording#howto" title="Lecture recording: How To">here</a>.</p>
+                                            <p>Your course (<strong>{{course}}</strong>) has opted out of lecture recording, as such recordings will not be scheduled.</p>
                                             <br/>
-                                            <p>If you don’t intend to use lecture recording, no further action is required.</p>
+                                            <p>If you do wish to use lecture recording, please find further steps <a href="http://www.cilt.uct.ac.za/cilt/lecture-recording#howto" title="Lecture recording: How To">here</a>. Otherwise no further action is required.</p>
                                             <br/>
                                             <p>Thank you,</p>
                                             <p>UCT Lecture Recording Team</p>

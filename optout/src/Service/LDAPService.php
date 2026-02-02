@@ -34,6 +34,9 @@ class LDAPService
     {
         $this->logger->info("Attempting to authenticate user '{$username}'.");
 
+        # TODO: this value should be "demand" and we should fethc the certificates
+        putenv("LDAPTLS_REQCERT=never");
+
         // Try to connect to LDAP server
         $connection = ldap_connect($this->host, $this->port);
 
@@ -81,6 +84,19 @@ class LDAPService
         return false; // Authentication failed
     }
 
+    private function convertWindowsTime($windowsTime) {
+        // Special values indicating the account never expires
+        if ($windowsTime == "0" || $windowsTime == "9223372036854775807" || empty($windowsTime)) {
+            return "Never Expires";
+        }
+
+        // Convert Windows FileTime (100-nanosecond intervals since 1601-01-01)
+        $unixTimestamp = ($windowsTime / 10000000) - 11644473600;
+
+        // Convert to human-readable date
+        return date("Y-m-d H:i:s", $unixTimestamp);
+    }
+
     public function findUserByCN(string $cn): ?array
     {
         $this->logger->info("Searching for user with CN '{$cn}'.");
@@ -121,7 +137,7 @@ class LDAPService
         $filteredResults = [];
         if (count($entries) > 0) {
             // $filteredKeys = array_values(array_filter($entries[0], 'is_string'));
-            $filteredKeys = ['dn', 'cn', 'sn', 'title', 'givenname', 'initials', 'displayname', 'department', 'mail'];
+            $filteredKeys = ['dn', 'cn', 'sn', 'title', 'givenname', 'initials', 'displayname', 'department', 'mail', 'accountexpires'];
 
             // Loop through filteredKeys and add existing keys to filteredResults
             for ($i = 0; $i < count($filteredKeys); $i++) {
@@ -134,6 +150,10 @@ class LDAPService
                         $filteredResults[$key] = $entries[0][$key];
                     }
                 }
+            }
+
+            if (isset($filteredResults['accountexpires'])) {
+                $filteredResults['accountexpires_date'] = $this->convertWindowsTime($filteredResults['accountexpires']);
             }
         }
 

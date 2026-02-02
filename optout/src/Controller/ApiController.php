@@ -43,46 +43,50 @@ class ApiController extends Controller
      * @Route("/search/{searchStr}")
      */
     public function search($searchStr, Request $request) {
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+        $authenticated = $session->get('username') ? true : false;
+
         try {
-        $isUctEmail = filter_var($searchStr, FILTER_VALIDATE_EMAIL) && strpos($searchStr, '@uct.ac.za') > -1;
-        $isNumeric = is_numeric($searchStr);
+            $isUctEmail = filter_var($searchStr, FILTER_VALIDATE_EMAIL) && strpos($searchStr, '@uct.ac.za') > -1;
+            $isNumeric = is_numeric($searchStr);
 
-        $result = [];
-        if ($isUctEmail) {
-            $result['vula'] = $this->searchVula(null, null, $searchStr);
-            $result['ldap'] = $this->ldapService->findUserByCN($result['vula']['username']);
-            $result['d2l'] = $this->d2l->search($searchStr);
-        }
-        else if ($isNumeric) {
-            $result['ldap'] = $this->ldapService->findUserByCN($searchStr);
-            $result['vula'] = $this->searchVula($searchStr, null, null);
-            $result['d2l'] = $this->d2l->search($searchStr);
-        }
+            $result = [];
+            if ($authenticated) {
+                if ($isUctEmail) {
+                    $result['vula'] = $this->searchVula(null, null, $searchStr);
+                    $result['ldap'] = $this->ldapService->findUserByCN($result['vula']['username']);
+                    $result['d2l'] = $this->d2l->search($searchStr);
+                }
+                else if ($isNumeric) {
+                    $result['ldap'] = $this->ldapService->findUserByCN($searchStr);
+                    $result['vula'] = $this->searchVula($searchStr, null, null);
+                    $result['d2l'] = $this->d2l->search($searchStr);
+                }
+                // $this->logger->info(json_encode($result));
+            } else {
+                $result = ['authenticated' => false];
+            }
 
-        $this->logger->info(json_encode($result));
-
-        return new Response(
-            json_encode($result),
-            200,
-            [
-            'Content-Type' => 'application/json'
-            ]
-        );
+            return new Response(
+                json_encode($result),
+                200,
+                [ 'Content-Type' => 'application/json' ]
+            );
         } catch (\Exception $e) {
-        $response = [
-            "text" => "Server error",
-            "statusCode" => 500,
-            "contentType" => [
-            'Content-Type' => 'text/plain'
-            ]
-        ];
-        switch($e->getMessage()) {
-            case "no such user":
-            $response['text'] = 'User not found';
-            $response['statusCode'] = 404;
-        }
+            $response = [
+                "text" => "Server error",
+                "statusCode" => 500,
+                "contentType" => [
+                'Content-Type' => 'text/plain'
+                ]
+            ];
+            switch($e->getMessage()) {
+                case "no such user":
+                $response['text'] = 'User not found';
+                $response['statusCode'] = 404;
+            }
 
-        return new Response($response['text'], $response['statusCode'], $response['contentType']);
+            return new Response($response['text'], $response['statusCode'], $response['contentType']);
         }
     }
 
@@ -90,15 +94,22 @@ class ApiController extends Controller
      * @Route("/search/vula/{searchStr}")
      */
     public function searchVulaEndpoint($searchStr, Request $request) {
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+        $authenticated = $session->get('username') ? true : false;
+
         try {
-            $ldap = [];
-            $vula = $this->searchVula(null, null, $searchStr);
-            if (isset($vula['username'])) {
-                $ldap = $this->searchLdap($vula['username']);
+            $result = [];
+            if ($authenticated) {
+                $result['vula'] = $this->searchVula(null, null, $searchStr);
+                if (isset($result['vula']['username'])) {
+                    $result['ldap'] = $this->searchLdap($result['vula']['username']);
+                }
+            } else {
+                $result = ['authenticated' => false];
             }
 
             return new Response(
-                json_encode(['vula' => $vula, 'ldap' => $ldap]),
+                json_encode($result),
                     200,
                 [
                     'Content-Type' => 'application/json'
@@ -126,14 +137,18 @@ class ApiController extends Controller
      * @Route("/search/d2l/list/{searchStr}")
      */
     public function listD2L($searchStr, Request $request) {
-        return new Response(
-            json_encode($this->d2l->list($searchStr)),
-                200,
-            [
-                'Content-Type' => 'application/json'
-            ]
-        );
-        return ;
+        $session = $request->hasSession() ? $request->getSession() : new Session();
+        $authenticated = $session->get('username') ? true : false;
+        if ($authenticated) {
+            return new Response(
+                json_encode($this->d2l->list($searchStr)),
+                    200,
+                [
+                    'Content-Type' => 'application/json'
+                ]
+            );
+        }
+        return new Response('[]', 200, ['Content-Type' => 'application/json']);
     }
 
     private function searchLdap($searchStr) {
@@ -361,12 +376,11 @@ class ApiController extends Controller
     $data = json_decode($request->getContent(), true);
     $workflow = (new Workflow)->getWorkflow();
 
-
-
     try {
       $course = new Course($courseCode, $courseHash, null, false);
-      return new Response(json_encode($course->getDetails()), 201);
       $updateStatus = $course->updateOptoutStatus($session->get('username'), $data, $workflow['oid']);
+      return new Response(json_encode($course->getDetails()), 201);
+
     } catch(\Exception $e) {
       $statusCode = 500;
       switch($e->getMessage()) {
@@ -449,13 +463,6 @@ class ApiController extends Controller
 
     return new Response($entity->getHash(), 200, ['Content-Type' => 'text/plain']);
   }
-
-  /**
-   * @Route("/api/v0/{entityType}/{entityName}");
-  public function updateOptout($entityType, $entityName, Request $request) {
-    $session = $request->hasSession() ? $request->getSession() : new Session();
-  }
-   */
 
   /**
    * @Route("/api/v0/timetable/{courseCode}/{year}")
@@ -554,6 +561,7 @@ class ApiController extends Controller
   /**
    * @Route("/monitor_batch")
    */
+  // Retention Service
   public function monitor_batch(Request $request) {
       set_time_limit(3000);
       switch ($request->getMethod()) {
@@ -575,8 +583,8 @@ class ApiController extends Controller
   /**
    * @Route("/monitor")
    */
-  public function monitor(Request $request)
-  {
+  // opt-out service
+  public function monitor(Request $request) {
     set_time_limit(3000);
     switch ($request->getMethod()) {
         case 'GET':
@@ -725,7 +733,7 @@ class ApiController extends Controller
     default:
         return new Response('Method not implemented', 405, ['Content-Type' => 'text/plain']);
     }
-}
+  }
 
   /**
    * @Route("/api/v0/episode/{eventId}")
@@ -776,6 +784,6 @@ class ApiController extends Controller
     default:
         return new Response('Method not implemented', 405, ['Content-Type' => 'text/plain']);
     }
-}
+  }
 
 }

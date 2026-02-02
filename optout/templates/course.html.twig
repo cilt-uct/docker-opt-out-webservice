@@ -202,7 +202,11 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Please login to change your preference.</p>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <p style="margin-bottom: 0px;">Please login with your staff number (without @wf.uct.ac.za) and network password:</p>
+                            </div>
+                        </div>
                         <div class="form-group row">
                             <div class="col-sm-10">
                                 <input type="text" class="form-control" name="eid" id="eid" value="" placeholder="User ID">
@@ -251,7 +255,8 @@
             function switchLeft(){
                 switchBtnRight.classList.remove('active-case');
                 switchBtnLeft.classList.add('active-case');
-                activeSwitch.style.left 						= '0%';
+                activeSwitch.style.left = '0%';
+                console.log('switchLeft');
 
                 $.ajax({
                     headers: {"x-entity-hash": "{{hash}}"},
@@ -270,7 +275,8 @@
             function switchRight(){
                 switchBtnRight.classList.add('active-case');
                 switchBtnLeft.classList.remove('active-case');
-                activeSwitch.style.left 						= '50%';
+                activeSwitch.style.left = '50%';
+                console.log('switchRight');
 
                 $.ajax({
                     headers: {"x-entity-hash": "{{hash}}"},

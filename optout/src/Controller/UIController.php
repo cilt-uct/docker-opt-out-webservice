@@ -40,11 +40,96 @@ class UIController extends Controller
     /**
      * test page
      *
-     * @Route("/test/{hash}", name="test")
+     * @Route("/test/{str}", name="test")
      */
-    public function test($hash, Request $request) {
+    public function test($str, Request $request) {
 
         // return new Response((new Workflow)->createCourseMails(), 201);
+
+        $utils = new Utilities();
+
+        $hash = $str;
+        $hash_type = 0;
+        $str_ar = explode("-", $str);
+        if (count($str_ar) == 2) {
+            $hash = $str_ar[0];
+            $hash_type = $str_ar[1];
+        }
+
+        // return new Response(json_encode($str_ar), 200, ['Content-Type' => 'application/json']);
+
+        $data = $utils->getMail($hash);
+        // return new Response(json_encode($data), 201);
+
+        if ($data['success']) {
+            $data = $data['result'][0];
+            // $hash = $data['hash'];
+
+            if ($data['course'] === null ) {
+                $dept = new Department($data['dept'], $data['hash'], $data['year'], false);
+                $details = $dept->getDetails();
+
+                return $this->render('department_mail.html.twig',
+                    array(  'dept' => $data['dept'],
+                            'dept_name' => $details['name'],
+                            'name' => $data['name'],
+                            'date' => $data['date_course'],
+                            'out_link' => 'https://srvubuclt001.uct.ac.za/optout/out/'. $data['hash'],
+                            'view_link' => 'https://srvubuclt001.uct.ac.za/optout/view/'. $data['hash']));
+            } else {
+                $course = new Course($data['course'], $data['hash'], $data['year'], false);
+                $details = $course->getDetails();
+
+                // $vula = new SakaiWebService();
+                $site_list = $this->d2l->getSiteByProviderId($data['course'], $data['year']);
+                $site = '';
+                $title = '';
+                if (count($site_list) > 0) {
+                    $site = $site_list[0]['SITE_ID'];
+                    $title = $site_list[0]['TITLE'];
+                }
+
+                $o = array( 'dept' => $data['dept'],
+                            'course' => $data['course'],
+                            'name' => $data['name'],
+                            'site_list' => $site_list,
+                            'site' => $site,
+                            'title' => $title,
+                            'date' => $data['date_schedule'],
+                            'out_link' => 'https://srvubuclt001.uct.ac.za/optout/out/'. $data['hash'],
+                            'view_link' => 'https://srvubuclt001.uct.ac.za/optout/view/'. $data['hash']);
+
+                if ($hash_type != 0) {
+                    $data['type'] = 'confirm';
+                    $data['case'] = $hash_type;
+                }
+
+                if ($data['type'] == 'confirm') {
+                    switch($data['case']) {
+                        case '1':
+                        case '2':
+                        case '3':
+                        case '4':
+                        case '5':
+                        case '6':
+                            return $this->render('course_mail_case_'. $data['case'] .'.html.twig', $o);
+                            break;
+                        default:
+                            return $this->render('course_mail.html.twig', $o);
+                            break;
+                    }
+                } else {
+                    return $this->render('course_mail.html.twig', $o);
+                }
+            }
+        } else {
+            return new Response("ERROR_MAIL_HASH", 500);
+        }
+
+        /*
+        // View Course details
+
+        $hash = $str;
 
 	    $authenticated = ['a' => false, 'z' => '0'];
 
@@ -158,6 +243,7 @@ class UIController extends Controller
             // return new Response(json_encode($data), 201);
             return $this->render('course.html.twig', $data);
         }
+        */
     }
 
     /**
