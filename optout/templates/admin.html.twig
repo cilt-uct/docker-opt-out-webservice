@@ -1,0 +1,745 @@
+{% include 'html_start.html' %}
+    <div class="content">
+        {% include 'header.html' %}
+        <aside id="nav-side">
+            <ul>
+                <li><a href="#top" ref="top">Top</a></li>
+            {% for l in list %}
+                <li><a href="#{{l}}" ref="{{l}}">{{l}}</a></li>
+            {% endfor %}
+            </ul>
+        </aside>
+        <a name="top" class="anchor"></a>
+        <div class="container post">
+            {% include 'header_nav.html' %}
+            <div class="row post-body">
+                <div class="col-md-12 post-title">
+                    <h3><span style="color: #5caad2;">Lecture Recording</span> Admin</h3>
+                    <br/>
+                    <div class="workflow-details">
+                        <!--p>{{authenticated|json_encode()}}</p-->
+                        <!--p>{{workflow|json_encode()}}</p-->
+                        <!--
+                            TODO:
+                            - Save the department, Course, and Schedulet Date Times
+                            - Select a Different workflow (drop-down)
+                            - Add button to create new workflow - advance workflow
+                        -->
+
+                        <div class="form-row form-inline">
+                            <div class="col-md-3 mb-3">
+                                <strong>Year: </strong>
+                                <span>{{workflow.year}} - {{workflow.semester|upper}}</span>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <strong>Status: </strong>
+                                <span>{{workflow.status}}</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="col-md-3 mb-3">
+                                <label for="worflow_date_start">Started</label>
+
+                                <input type="text" class="form-control" id="worflow_date_start" value="{{workflow.date_start|date("Y-m-d H:i:s")}}" disabled readonly="true"/>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="worflow_date_dept">Department</label>
+
+                                <div class="row">
+                                    <div class="col-sm-7">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control text-center" id="worflow_date_dept" value="{{workflow.date_dept|date("Y-m-d")}}" data-toggle="datepicker"
+                                                    style="width: 70%"/>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary" id="worflow_date_dept_btn">
+                                                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--div class="col-sm-4" style="padding:0;">
+                                        <div class="input-group">
+                                            <input aria-label="Small" aria-describedby="inputGroup-sizing-sm" style="width: 1%;" class="form-control text-center" type="text" value="{{workflow.date_dept|date("H")}}"/>
+                                            <div class="input-group-mid">
+                                                <span class="input-group-text" id="inputGroup-sizing-sm">:</span>
+                                            </div>
+                                            <input class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm" style="width: 1%;" type="text" value="{{workflow.date_dept|date("i")}}"/>
+                                        </div>
+                                    </div-->
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="worflow_date_course">Course</label>
+
+                                <div class="row">
+                                    <div class="col-sm-7">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="worflow_date_course" value="{{workflow.date_course|date("Y-m-d")}}" data-toggle="datepicker"
+                                                    style="width: 70%"/>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary" id="worflow_date_course_btn">
+                                                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--div class="col-sm-4" style="padding:0;">
+                                        <div class="input-group">
+                                            <input aria-label="Small" aria-describedby="inputGroup-sizing-sm" style="width: 1%;" class="form-control text-center" type="text" value="{{workflow.date_course|date("H")}}"/>
+                                            <div class="input-group-mid">
+                                                <span class="input-group-text" id="inputGroup-sizing-sm">:</span>
+                                            </div>
+                                            <input class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm" style="width: 1%;" type="text" value="{{workflow.date_course|date("i")}}"/>
+                                        </div>
+                                    </div-->
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="worflow_date_schedule">Schedule</label>
+
+                                <div class="row">
+                                    <div class="col-sm-7">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="worflow_date_schedule" value="{{workflow.date_schedule|date("Y-m-d")}}" data-toggle="datepicker"
+                                                    style="width: 70%"/>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary" id="worflow_date_schedule_btn">
+                                                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--div class="col-sm-4" style="padding:0;">
+                                        <div class="input-group">
+                                            <input aria-label="Small" aria-describedby="inputGroup-sizing-sm" style="width: 1%;" class="form-control text-center" type="text" value="{{workflow.date_schedule|date("H")}}"/>
+                                            <div class="input-group-mid">
+                                                <span class="input-group-text" id="inputGroup-sizing-sm">:</span>
+                                            </div>
+                                            <input class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm" style="width: 1%;" type="text" value="{{workflow.date_schedule|date("i")}}"/>
+                                        </div>
+                                    </div-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="departments" id="departments">
+                        {% if departments.success %}
+                            {% set newTitle = '0' %}
+                            {% for dept in departments.result %}
+                            <div>
+                                {% set curTitle = dept.dept|split('')|first %}
+                                {% if (curTitle != newTitle) %}
+                                    {% set newTitle = curTitle %}
+                                    <a name="{{newTitle}}" class="anchor"></a>
+                                {% endif %}
+                                <div class="row no-gutters dept-title">
+                                    <div class="col-sm-6">
+                                        {% if (dept.eligble_courses_S1 > 0) or (dept.eligble_courses_S2 > 0) %}
+                                        <h5>
+                                            <a href="https://srvubuclt001.uct.ac.za/optout/view/{{dept.hash}}" target="_blank">
+                                                <i class="far fa-envelope"></i>
+                                                {{dept.dept}}&nbsp;&nbsp;<small>{{dept.name}}</small>
+                                            </a>
+                                        </h5>
+                                        {% else %}
+                                        <h5 style="margin:0.4em;">{{dept.dept}}&nbsp;&nbsp;<small>{{dept.name}}</small></h5>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-sm-2" style="padding-top:0.6em;">
+                                        <label>Active</label>
+                                        <div class="switch">
+                                            <input type="checkbox" id="chk_use_{{dept.dept}}" data-dept="{{dept.dept}}" data-hash="{{dept.hash}}" {% if (dept.use_dept == '1') %}checked{% endif %} /><label id="toggle_use_{{dept.dept}}" for="chk_use_{{dept.dept}}">Toggle</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4" style="padding-top:0.6em;">
+                                        <label>Opted Out</label>
+                                        <label class="right" id="chk_opt_{{dept.dept}}_date">
+                                            {% if dept.updated_by|length > 1 %}{{dept.updated_by}}<br/>{{dept.updated_at|date("G:i l, jS F Y")}}{% endif %}
+                                        </label>
+                                        <div class="switch">
+                                            <input type="checkbox" id="chk_opt_{{dept.dept}}" data-dept="{{dept.dept}}" data-hash="{{dept.hash}}" {% if dept.is_optout %}checked{% endif %}/><label id="toggle_opt_{{dept.dept}}" for="chk_opt_{{dept.dept}}">Toggle</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row no-gutters dept-details">
+                                    <div class="col-sm-8">
+                                        <h6>Contact Details</h6>
+                                        <div class="form-group row">
+                                            <label for="inp_{{dept.dept}}_firstname" class="col-sm-3 col-form-label">Name</label>
+                                            <div class="col-sm-4">
+                                                <input type="text" class="form-control"
+                                                        id="inp_{{dept.dept}}_firstname" data-type="dept" data-field="hodFirstname" data-dept="{{dept.dept}}" data-hash="{{dept.hash}}"
+                                                        placeholder="Firstname" data-old="{{dept.firstname}}" value="{{dept.firstname}}"/>
+                                                <span class="loader">
+                                                    <span></span>
+                                                    <span></span>
+                                                    <span></span>
+                                                </span>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <input type="text" class="form-control"
+                                                        id="inp_{{dept.dept}}_lastname" data-type="dept" data-field="hodLastname" data-dept="{{dept.dept}}" data-hash="{{dept.hash}}"
+                                                        placeholder="Lastname" data-old="{{dept.lastname}}" value="{{dept.lastname}}"/>
+                                                <span class="loader">
+                                                    <span></span>
+                                                    <span></span>
+                                                    <span></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="inp_{{dept.dept}}_eid" class="col-sm-3 col-form-label">EID</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control"
+                                                        id="inp_{{dept.dept}}_eid" data-type="dept" data-field="hodEID" data-dept="{{dept.dept}}" data-hash="{{dept.hash}}"
+                                                        placeholder="EID" data-old="{{dept.eid}}" value="{{dept.eid}}"/>
+                                                <span class="loader">
+                                                    <span></span>
+                                                    <span></span>
+                                                    <span></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="inp_{{dept.dept}}_mail" class="col-sm-3 col-form-label">E-mail</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control"
+                                                        id="inp_{{dept.dept}}_mail" data-type="dept" data-field="hodMail" data-dept="{{dept.dept}}" data-hash="{{dept.hash}}"
+                                                        placeholder="E-mail" data-old="{{dept.email|lower}}" value="{{dept.email|lower}}"/>
+                                                <span class="loader">
+                                                    <span></span>
+                                                    <span></span>
+                                                    <span></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="inp_{{dept.dept}}_alt" class="col-sm-3 col-form-label">Alternative E-mail</label>
+                                            <div class="col-sm-8" id="{{dept.dept}}_alt_mail_container" style="position: relative;">
+                                                {% set alt_mails = dept.alt_email|split(',') %}
+                                                <input type="hidden" id="{{dept.dept}}_alt" name="{{dept.dept}}_alt" value="{{dept.alt_email}}"/>
+                                                <input type="hidden" id="inp_{{dept.dept}}_alt_mails" name="inp_{{dept.dept}}_alt_mails" value="{{alt_mails|length}}"/>
+                                                {% for mail in alt_mails %}
+                                                <div class="multi" id="{{dept.dept}}_alt_{{ loop.index }}">
+                                                    <a href="#" class="{% if loop.index == 1 %}success{% else %}danger{% endif %}" rel="{{dept.dept}}" data-dept="{{dept.dept}}" data-hash="{{dept.hash}}" data-index="{{ loop.index }}">
+                                                        <i class="fa {% if loop.index == 1 %}fa-plus{% else %}fa-minus{% endif %}" aria-hidden="true"></i>
+                                                    </a>
+                                                    <input type="text" class="form-control"
+                                                            id="inp_{{dept.dept}}_alt_{{ loop.index }}" data-type="dept" data-field="altMail" data-dept="{{dept.dept}}" data-hash="{{dept.hash}}"
+                                                            data-index="{{ loop.index }}"
+                                                            placeholder="E-mail" data-old="{{mail}}" value="{{mail|lower}}"/>
+                                                    <span class="loader">
+                                                        <span></span>
+                                                        <span></span>
+                                                        <span></span>
+                                                    </span>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <h6>&nbsp;</h6>
+                                        {% if (dept.eligble_courses_S1 > 0) or (dept.eligble_courses_S2 > 0) %}
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="2" style="width: 180px;">&nbsp;</th>
+                                                        <th class="text-center" style="width: 80px;"><small style="color: #888;">S1</small></th>
+                                                        <th class="text-center" style="width: 80px;"><small style="color: #888;">S2</small></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan="2" class="text-right">
+                                                            <strong>Eligble Courses:</strong>
+                                                        </td>
+                                                        <td class="text-center">{{dept.eligble_courses_S1}}</td>
+                                                        <td class="text-center">{{dept.eligble_courses_S2}}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2"><hr/></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-right" rowspan="4">
+                                                            <strong>Mails:</strong>
+                                                        </td>
+                                                        <td class="text-right"><small>Notification</td>
+                                                        </td>
+                                                        <td class="text-center">{{dept.s1_mail_sent_note|default('0')}}</td>
+                                                        <td class="text-center">{{dept.s2_mail_sent_note|default('0')}}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-right"><small>Confirmation</small></td>
+                                                        <td class="text-center">{{dept.s1_mail_sent_confirm|default('0')}}</td>
+                                                        <td class="text-center">{{dept.s2_mail_sent_confirm|default('0')}}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-right"><small>To Send</small></td>
+                                                        <td class="text-center">
+                                                            {% if (dept.s1_mail_unsent > 0) %}
+                                                                <span class="info">{{dept.s1_mail_unsent|default('0')}}</span>
+                                                            {% else %}
+                                                                <small class="info">-</small>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-center">
+                                                            {% if (dept.s2_mail_unsent > 0) %}
+                                                                <span class="info">{{dept.s2_mail_unsent|default('0')}}</span>
+                                                            {% else %}
+                                                                <small class="info">-</small>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-right"><small>Error</small></td>
+                                                        <td class="text-center">
+                                                            {% if (dept.s1_mail_err > 0) %}
+                                                                <span class="danger">{{dept.s1_mail_err|default('0')}}</span>
+                                                            {% else %}
+                                                                <small class="danger">-</small>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-center">
+                                                            {% if (dept.s2_mail_err > 0) %}
+                                                                <span class="danger">{{dept.s2_mail_err|default('0')}}</span>
+                                                            {% else %}
+                                                                <small class="danger">-</small>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <br/>
+                                            <div class="text-center">
+                                                {% set out_semester = workflow.semester ~"|"~ dept.eligble_courses_S1 ~"|"~ dept.eligble_courses_S2 %}
+                                                {% set out_s1 = "s1|"~ dept.eligble_courses_S1 ~"|"~ dept.eligble_courses_S2 %}
+                                                {% set out_s2 = "s2|"~ dept.eligble_courses_S1 ~"|"~ dept.eligble_courses_S2 %}
+                                                {% if (dept.eligble_courses_S1 > 0) and (dept.eligble_courses_S2 > 0) %}
+                                                    <div class="btn-group" style="width:60%">
+                                                        <button type="button" ref="btn_view_course" data-sem="{{out_semester}}" class="btn btn-outline-success btn-sm" style="width:80%" id="btn_view_{{dept.dept}}" data-rel="{{dept.dept}}" data-hash="{{dept.hash}}">View Courses</button>
+                                                        <button type="button" class="btn btn-outline-success btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                                                        <div class="dropdown-menu dropdown-menu-right">
+                                                            <a class="dropdown-item" href="#" ref="btn_view_course" data-sem="{{out_s1}}" data-rel="{{dept.dept}}" data-hash="{{dept.hash}}">Semester 1</a>
+                                                            <a class="dropdown-item" href="#" ref="btn_view_course" data-sem="{{out_s2}}" data-rel="{{dept.dept}}" data-hash="{{dept.hash}}">Semester 2</a>
+                                                        </div>
+                                                    </div>
+                                                {% elseif (dept.eligble_courses_S1 > 0) or (dept.eligble_courses_S2 > 0) %}
+                                                    <button type="button" ref="btn_view_course" data-sem="{{out_semester}}" class="btn btn-outline-success btn-sm" style="width:60%" id="btn_view_{{dept.dept}}" data-rel="{{dept.dept}}" data-hash="{{dept.hash}}">View Courses</button>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row no-gutters dept-courses" id="{{dept.dept}}_courses">
+                                    <ul class="nav nav-tabs">
+                                        {% if (dept.eligble_courses_S1 > 0) %}
+                                        <li class="nav-item">
+                                            <a class="nav-link {% if (workflow.semester == 's1') %}active{% endif %}" id="{{dept.dept}}_courses-s1_tab" data-toggle="tab" href="#{{dept.dept}}_courses-s1" role="tab" aria-controls="{{dept.dept}}_courses-s1" aria-selected="{% if (workflow.semester == 's1') %}true{% endif %}">Semester 1</a>
+                                        </li>
+                                        {% endif %}
+                                        {% if (dept.eligble_courses_S2 > 0) %}
+                                        <li class="nav-item">
+                                            <a class="nav-link {% if (workflow.semester == 's2') %}active{% endif %}" id="{{dept.dept}}_courses-s2_tab" data-toggle="tab" href="#{{dept.dept}}_courses-s2" role="tab" aria-controls="{{dept.dept}}_courses-s2" aria-selected="{% if (workflow.semester == 's2') %}false{% endif %}">Semester 2</a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                    <div class="tab-content" id="{{dept.dept}}_courses_html"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                    </div>
+                    {% else %}
+                    {{departments|json_encode()}}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/tmpl.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/moment.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/datepicker.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/jquery.autocomplete.min.js') }}"></script>
+    <script>
+        var changeTimer = false, field = null, div = null,
+            email_regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i;
+
+        $(function() {
+            $.fn.datepicker.setDefaults({autoHide: true});
+
+            $('#worflow_date_dept').on('pick.datepicker', function (e) {
+                var d = $('#worflow_date_dept').datepicker('getDate');
+
+                $('#worflow_date_course').datepicker('setStartDate', d);
+                console.log(e.type, e.namespace, e.view, d);
+            }).datepicker({
+                format: 'yyyy-mm-dd'
+                ,autoHide: true
+                ,date: '{{workflow.date_dept|date("Y-m-d")}}' //new Date(2014, 1, 14) // Or '02/14/2014'
+                ,startDate: '{{workflow.date_start|date("Y-m-d")}}'
+                ,endDate: '{{workflow.date_course|date("Y-m-d")}}'
+                ,trigger: $('#worflow_date_dept_btn')
+            });
+
+            $('#worflow_date_course').on('pick.datepicker', function (e) {
+                var d = $('#worflow_date_course').datepicker('getDate');
+
+                $('#worflow_date_dept').datepicker('setEndDate', d);
+                $('#worflow_date_schedule').datepicker('setStartDate', d);
+                console.log(e.type, e.namespace, e.view, d);
+            }).datepicker({
+                format: 'yyyy-mm-dd'
+                ,autoHide: true
+                ,date: '{{workflow.date_course|date("Y-m-d")}}'
+                ,startDate: '{{workflow.date_dept|date("Y-m-d")}}'
+                ,endDate: '{{workflow.date_schedule|date("Y-m-d")}}'
+                ,trigger: $('#worflow_date_course_btn')
+            });
+
+            $('#worflow_date_schedule').on('pick.datepicker', function (e) {
+                var d = $('#worflow_date_schedule').datepicker('getDate');
+
+                $('#worflow_date_course').datepicker('setEndDate', d);
+                console.log(e.type, e.namespace, e.view, d);
+            }).datepicker({
+                format: 'yyyy-mm-dd'
+                ,autoHide: true
+                ,date: '{{workflow.date_schedule|date("Y-m-d")}}'
+                ,startDate: '{{workflow.date_course|date("Y-m-d")}}'
+                ,trigger: $('#worflow_date_schedule_btn')
+            });
+
+            /*
+            $('#worflow_date_dept').datetimepicker({
+                    defaultDate: '{{workflow.date_dept|date("Y-m-d H:i:s")}}',
+                    //minDate: '{{workflow.date_start|date("Y-m-d H:i:s")}}',
+                    //maxDate: '{{workflow.date_course|date("Y-m-d H:i:s")}}'
+            });
+
+            $('#worflow_date_course').datetimepicker({
+                    defaultDate: '{{workflow.date_course|date("Y-m-d H:i:s")}}',
+                    //minDate: '{{workflow.date_dept|date("Y-m-d H:i:s")}}',
+                    //maxDate: '{{workflow.date_schedule|date("Y-m-d H:i:s")}}'
+            });
+
+            $('#worflow_date_schedule').datetimepicker({
+                    defaultDate: '{{workflow.date_schedule|date("Y-m-d H:i:s")}}',
+                    //minDate: '{{workflow.date_course|date("Y-m-d H:i:s")}}',
+            });
+
+            $('#worflow_date_dept').on('dp.change', function (e) {
+                //$('#worflow_date_course').datetimepicker('minDate', e.date);
+
+                console.log(e);
+            });
+            $('#worflow_date_course').on('dp.change', function (e) {
+                //$('#worflow_date_dept').datetimepicker('maxDate', e.date);
+            // $('#worflow_date_schedule').datetimepicker('minDate', e.date);
+                console.log(e);
+            });
+            $('#datetimepicker8').on('dp.change', function (e) {
+                //$('#worflow_date_course').datetimepicker('maxDate', e.date);
+                console.log(e);
+            });
+            */
+
+            $('.dropdown-toggle').dropdown();
+
+            // view courses
+            function display_courses(hash, rel, sem) {
+                var btn = $('#btn_view_'+ rel),
+                    s = sem[0] == 's1' ? (sem[1] ? 's1' : 's2') : (sem[2] ? 's2' : 's1');
+                btn.removeClass('btn-outline-success').addClass('btn-outline-info').html('Hide Courses');
+                console.log(s);
+
+                $('#'+ rel +'_courses_html').html(tmpl('tmpl-courses-loading',{}));
+                $('#'+ rel +'_courses').show();
+                $('#'+ rel +'_courses-'+ s +'_tab').tab('show');
+                $.ajax({
+                    headers: {"x-entity-hash": hash, "x-entity-courses": '1'},
+                    url: "/optout/api/v0/dept/"+rel,
+                    method: 'GET',
+                    dataType: 'json'
+                }).done(function(data) {
+                    var o = data;
+                    o['semester'] = s;
+                    $('#'+ data.dept +'_courses_html').html(tmpl('tmpl-courses', { 'hash' : hash, 'data': data}));
+
+                }).fail(function(xhr) {
+                    div.html(tmpl('tmpl-courses-error',{}));
+                });
+            }
+
+            $('#departments .dept-details').on('click','button.btn-sm[ref="btn_view_course"], a.dropdown-item[ref="btn_view_course"]', function(event) {
+                event.preventDefault();
+
+                var item = $(this),
+                    div = $('#'+ item.data('rel') +'_courses_html'),
+                    btn = $('#btn_view_'+ item.data('rel')),
+                    sem = item.data('sem').split("|");
+                console.log(item.prop('nodeName') +' '+ btn.data('rel') +' '+ btn.data('hash'));
+
+                if (item.prop('nodeName') == 'A') {
+                    if (btn.hasClass('btn-outline-info')) {
+                        // we are already open - toggle tab
+                        $('#'+ item.data('rel') +'_courses-'+ sem[0] +'_tab').tab('show');
+                    } else {
+                        display_courses(btn.data('hash'), btn.data('rel'), sem);
+                    }
+                } else {
+                    if (btn.hasClass('btn-outline-info')) {
+                        $('#'+ btn.data('rel') +'_courses').hide();
+                        btn.removeClass('btn-outline-info').addClass('btn-outline-success').html('View Courses');
+                    } else {
+                    display_courses(btn.data('hash'), btn.data('rel'), sem);
+                    }
+                }
+            });
+
+            $('#departments').on('click','.course-details button.btn-sm', function(event) {
+                var btn = $(this);
+                div = $('#'+ btn.data('rel') +'_timetable');
+                console.log(btn.data('rel') +' '+ btn.data('year'));
+
+                if (btn.hasClass('btn-outline-info')) {
+                    div.hide();
+                    btn.removeClass('btn-outline-info').addClass('btn-outline-success').html('View Timetable');
+                } else {
+                    btn.removeClass('btn-outline-success').addClass('btn-outline-info').html('Hide Timetable');
+                    div.html(tmpl('tmpl-timetable-loading',{})).show();
+
+                    $.ajax({
+                        url: "/optout/api/v0/timetable/"+ btn.data('rel') +"/"+ btn.data('year'),
+                        method: 'GET',
+                        dataType: 'json'
+                    }).done(function(data) {
+                        console.log(data);
+                        div.html(tmpl('tmpl-course-timetable', data));
+                    }).fail(function(xhr) {
+                        div.html(tmpl('tmpl-timetable-error',{}));
+                    });
+                }
+            });
+
+            // saving department active
+            $('.dept-title input[id*="chk_use_"]').on('change', function(event) {
+                var chk = $(this);
+                console.log(chk.attr('id') +' '+ chk.data('dept') +' '+ chk.data('hash') +' '+ chk.is(':checked'));
+
+                d = [{  "dept": chk.data('dept'),
+                        "changes": [{
+                                "field": 'active',
+                                "from": chk.is(':checked') ? '0' : '1',
+                                "to": chk.is(':checked') ? '1' : '0'
+                            }]
+                        }];
+                console.log(JSON.stringify(d));
+                $.ajax({
+                    headers: {"x-entity-hash": chk.data('hash')},
+                    url: "/optout/api/v0/dept/" + chk.data('dept'),
+                    method: 'patch',
+                    data: JSON.stringify(d)
+                }).done(function() {
+                    console.log('done');
+                }).fail(function(xhr) {
+
+                    console.log(xhr.responseText);
+                });
+            });
+
+            // saving department opt-out
+            $('.dept-title input[id*="chk_opt_"]').on('change', function(event) {
+                var chk = $(this),
+                    dt = $('#'+ $(this).attr('id') +'_date');
+                console.log(chk.attr('id') +' '+ chk.data('dept') +' '+ chk.data('hash') +' '+ chk.is(':checked'));
+
+                $.ajax({
+                    headers: {"x-entity-hash": chk.data('hash')},
+                    url: "/optout/api/v0/dept/"+ chk.data('dept'),
+                    method: 'PUT',
+                    data: '{"status": '+ (chk.is(':checked') ? '1':'0') +'}',
+                    dataType: 'json'
+                }).done(function(data) {
+                    if (data.success) {
+                        dt.html(data.user +'<br/>'+ moment(data.date).calendar());
+                    } else {
+                        console.log(data);
+                        alert('error opting out department');
+                    }
+                }).fail(function(xhr) {
+                    console.log(xhr);
+                    alert('error opting out department');
+                });
+            });
+
+            // saving course opt-out
+            $('#departments').on('change', '.course-title input[id*="chk_opt_"]', function(event) {
+                var chk = $(this),
+                    dt = $('#'+ $(this).attr('id') +'_date');
+                console.log(chk.attr('id') +' '+ chk.data('course') +' '+ chk.data('hash') +' '+ chk.is(':checked'));
+
+                $.ajax({
+                    headers: {"x-entity-hash": chk.data('hash')},
+                    url: "/optout/api/v0/course/"+ chk.data('course'),
+                    method: 'PUT',
+                    data: '{"status": '+ (chk.is(':checked') ? '1':'0') +'}',
+                    dataType: 'json'
+                }).done(function(data) {
+                    if (data.success) {
+                        dt.html(data.user +' '+ moment(data.date).calendar());
+                    } else {
+                        console.log(data);
+                        alert('error opting out course');
+                    }
+                }).fail(function(xhr) {
+                    console.log(xhr);
+                    alert('error opting out course');
+                });
+            });
+
+            $('#departments').on('click','.multi a',function(event){
+                event.preventDefault();
+                var dept = $(this).attr('rel'),
+                    cnt = parseInt($('#inp_'+ dept +'_alt_mails').val(), 10),
+                    idx = parseInt($(this).data('index'), 10);
+
+                console.log($('#inp_'+ dept +'_alt_mails').val() + " "+ idx);
+
+                if ($(this).hasClass('success')) {
+
+                    $('#inp_'+ dept +'_alt_mails').val(cnt + 1);
+                    $('#'+ dept +'_alt_mail_container').append(tmpl('tmpl-dept-altMail',
+                                    {index: cnt+1, dept: $(this).data('dept'), hash: $(this).data('hash')}));
+                } else {
+                    $('#inp_'+ dept +'_alt_'+ idx).parent().remove();
+                    $('#inp_'+ dept +'_alt_1').trigger('change');
+                }
+            });
+
+            $('#departments').on('focusin','input[type=text]',function(event){
+                $(this).parent().removeClass('done err updating');
+            });
+
+            $('#departments').on('change','input[type=text]',function(event){
+                if (changeTimer !== false) clearTimeout(changeTimer);
+                var valid = true, d = [], dept = $(this).data('dept');
+
+                field = $(this);
+                field.parent()
+                            .removeClass('done err updating')
+                            .removeAttr('data-errortext');
+
+                //console.log(field.attr('id') +' '+ field.data('dept') +' '+ field.data('hash') +' '+ field.data('type') +' '+ field.data('field'));
+
+                if (field.data('field') != 'altMail') {
+                    d = [{  "changes": [{
+                                "field": field.data('field'),
+                                "from": field.data('old'),
+                                "to": field.val()
+                            }]
+                        }];
+
+                    if ((field.data('field') === 'hodMail') || (field.data('field') === 'convenorEmail')) {
+                        if (!email_regex.test(field.val())) {
+                            mailValidationError(field);
+                            valid = false;
+                        }
+
+                        d[0]['changes'][0]['to'] = d[0]['changes'][0]['to'].toLowerCase();
+                        d[0]['changes'][0]['from'] = d[0]['changes'][0]['from'].toLowerCase();
+                    }
+
+                } else {
+
+                    var idx = field.data('index'),
+                        cnt = $('#inp_'+field.data('dept')+'_alt_mails').val(),
+                        new_val = [];
+
+                    for (var i = 1; i <= cnt; i++) {
+                        var f = $('#inp_'+ field.data('dept') +'_alt_'+ i);
+                        if (f.length > 0) {
+                            if (f.val() != '') {
+                                if(!email_regex.test(f.val())){
+                                    mailValidationError(f);
+                                    valid = false;
+                                } else {
+                                    new_val.push(f.val().toLowerCase());
+                                }
+                            }
+                        }
+                    }
+
+                    $('#'+ dept +'_alt').data('to', new_val.join(','));
+                    d = [{  "changes": [{
+                                "field": field.data('field'),
+                                "from": $('#'+ dept +'_alt').val(),
+                                "to": new_val.join(',')
+                            }]
+                        }];
+                }
+
+                d[0][ field.data('type') ] = (field.data('type') == 'dept' ? field.data('dept') : field.data('course'));
+                d['hash'] = (field.data('type') == 'dept' ? field.data('hash') : field.data('dept_hash'));
+
+                if (valid) {
+                    field.parent().addClass('updating');
+
+                    console.log(d);
+
+                    $.ajax({
+                        headers: {"x-entity-hash": d['hash']},
+                        url: "/optout/api/v0/dept/"+ field.data('dept'),
+                        method: 'patch',
+                        data: JSON.stringify(d)
+                    }).done(function() {
+                        updateSuccess(field);
+                    }).fail(function(xhr) {
+                        if (xhr.status === 409 && xhr.responseJSON) {
+                            console.log(xhr.responseJSON);
+                        }
+
+                        updateError(field, xhr);
+                    }).always(function() {
+                        field.parent().removeClass('updating');
+                    });
+                }
+            });
+
+            function updateSuccess(field) {
+                field
+                    .data('old', field.val())
+                    .parent()
+                    .addClass('done');
+
+                if (field.data('field') == 'altMail') {
+                    var dept = field.data('dept');
+                    $('#'+ dept +'_alt').val( $('#'+ dept +'_alt').data('to') );
+                }
+                setTimeout(function() {
+                    field
+                        .parent()
+                        .removeClass('done');
+                }, 5000);
+            }
+
+            function updateError(field, serverResponse) {
+                field
+                    .parent()
+                    .addClass('err')
+                    .attr('data-errortext', 'Already updated. Please refresh to view the latest changes.');
+            }
+
+            function mailValidationError(field, serverResponse) {
+                field
+                    .parent()
+                    .addClass('err')
+                    .attr('data-errortext', 'Please enter a valid e-mail address.');
+            }
+        });
+    </script>
+    {{ source('admin_templates.html') }}
+{% include 'footer.html' %}
+{% include 'html_end.html' %}

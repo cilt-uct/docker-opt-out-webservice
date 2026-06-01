@@ -1,17 +1,18 @@
 
 ###> symfony/framework-bundle ###
-/.env
-/public/bundles/
-/var/
-/vendor/
+.env
+#/public/bundles/
+/optout/var/cache
+#/vendor/
 ###< symfony/framework-bundle ###
-.env.dist
-composer.lock
-symfony.lock
-bin/
-src/Controller/.gitignore
-public/
+#.env.dist
+#composer.lock
+#symfony.lock
+#bin/
+#src/Controller/.gitignore
+#public/
 .DS_Store
 *.swp
-node_modules
-package-lock.json
+#node_modules
+#package-lock.json
+ldap-server.crt

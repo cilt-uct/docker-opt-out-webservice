@@ -1,0 +1,409 @@
+{% include 'html_start.html' %}
+    <div class="content">
+        {% include 'header.html' %}
+{% set st = { 'convenor': 'convenors', 'course': 'courses', 'were': 'were', 'are': 'are', 'all': 'all course convenors' } %}
+{% if details.courses | length <= 1 %}
+    {% set st = { 'convenor': 'convenor', 'course': 'course', 'were': 'was', 'are': 'is', 'all': 'the course convenor' } %}
+{% endif %}
+        <div class="container post">
+            <div class="row post-body">
+                <div class="col-md-12 post-title">
+                    <h3><span style="color: #5caad2;">{{details.name}}</span><small>&nbsp;:&nbsp;Automated setup of lecture recording</small></h3>
+                    <p class="author"><span class="text-muted">{{created_at|date("F jS \\a\\t g:ia")}}</span></p>
+                    <br/>
+                    <!-- {% if readonly %}Readonly{% else %}Editable{% endif %} -->
+                    <div class="row">
+                        {% if not readonly %}
+                            <div class="col-md-8">
+                                <p>Based on the current <a href="http://coursetimetable.uct.ac.za" title="UCT Timetables Site">venue bookings</a>, the following {{st.course}} are eligible for automated lecture recording set up.</p>
+                                <p>Please check and update the course convenor details below. Course convenor information is sourced from PeopleSoft. Updating the convenor details here will change the convenor for the purposes of further lecture recording set up, but it is still important that your department administrator updates the convenor records on PeopleSoft.</p>
+                                <p>A course-level opt-out email will be sent to {{st.all}} by <strong>{{date_course|date("l, d F")}}</strong>. Should the course convenor information not be available for a particular course, the course opt-out email will default to the Head of Department.</p>
+
+                                <div style="margin: 15px 0px;"  id="semester-select">
+                                    <span style="display: inline-block;padding-right:6px;">Select semester:</span>
+                                    {% if counts.s1 >= 0%}<a href="#" rel="s1" class="badge badge-info" style="font-size:14px;margin: 0px 8px;">Semester 1 &nbsp;<span class="badge badge-light">{{counts.s1}}</span></a>{% endif %}
+                                    {% if counts.s2 >= 0%}<a href="#" rel="s2" class="badge badge-light" style="font-size:14px;margin: 0px 8px;">Semester 2 &nbsp;<span class="badge badge-dark">{{counts.s2}}</span></a>{% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light mb-3" style="border: 1px solid #ccc;position: relative;top: -24px;">
+                                    <div class="card-body">
+                                        <p>If your department as a whole chooses to opt-out from automated setup of lecture recording, please click the link below:</p>
+                                        <div style="text-align:center;">
+                                            <a href="{{out_link}}" title="Opt out of automated lrecture scheduling" class="btn btn-danger">Opt-out for the department</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-md-10">
+                                {# {% if details.is_optout %}
+                                    <p>This department has opted to <i>NOT</i> automatically schedule lecture recordings for the following {{st.course}}:</p>
+                                {% else %}
+                                    <p>The course {{st.convenor}} {{st.were}} notified, on <strong>{{date_course|date("l, d F Y")}}</strong>, that their {{st.course}} {{st.are}} eligible for automatic scheduling according to their timetable.</p>
+                                    {% if date() < date(date_schedule) %}
+                                        <p>They have until <strong>{{date_schedule|date("l, d F Y")}}</strong> to opt-out of the automatic scheduling.</p>
+                                    {% else %}
+                                        <p>The recordings were automatically scheduled on <strong>{{date_schedule|date("l, d F Y")}}</strong>.</p>
+                                    {% endif %}
+                                {% endif %} #}
+
+                                <div style="margin: 15px 0px;"  id="semester-select">
+                                    <span style="display: inline-block;padding-right:6px;">Select semester:</span>
+                                    {% if counts.s1 >= 0 %}<a href="#" rel="s1" class="badge badge-info" style="font-size:14px;margin: 0px 8px;">Semester 1 &nbsp;<span class="badge badge-light">{{counts.s1}}</span></a>{% endif %}
+                                    {% if counts.s2 >= 0%}<a href="#" rel="s2" class="badge badge-light" style="font-size:14px;margin: 0px 8px;">Semester 2 &nbsp;<span class="badge badge-dark">{{counts.s2}}</span></a>{% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        </div>
+                    </div>
+                    {% if not readonly %}
+                        {% if not authenticated.a %}
+                            <div class="alert alert-light" role="alert">
+                                <u>NOTE:</u> To edit the convenor information please <button class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#loginModal">Login</button>
+                            </div>
+                            {% if authenticated.z|length > 1 %}
+                            <div class="alert alert-danger" role="alert">
+                            {{authenticated.z}}
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+
+                    <div class="table-responsive">
+                        <table class="table" id="tbl_s1">
+                            <thead>
+                                <tr>
+                                    <th style="width: 120px;">Course</th>
+                                    <th style="width: 40%;">Convenor</th>
+                                    <th class="text-center" style="width: 40%;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in details.courses if course.semester == 's1' %}
+                                    <tr>
+                                        <td>
+                                            <label>
+                                                <strong {% if not course.eligble %}style="color:#888"{% endif %}>
+                                                {{course.courseCode}}
+                                                </strong>
+                                            </label>
+                                        </td>
+                                        <td class="convenor" id="{{course.courseCode}}_convenor">
+                                            <div class="display">
+                                                <strong>{{course.convenor.name}}</strong><br>
+                                                <small class="text-lowercase">{{course.convenor.email}}</small>
+                                            </div>
+                                            {% if authenticated.a and (not readonly_s1) %}
+                                            <div class="btn">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-course="{{course.courseCode}}" data-target="#changeModal">
+                                                    <i class="fas fa-user-edit"></i> Change
+                                                </button>
+                                            </div>
+                                            <div class="auto" style="display:none">
+                                                <input type="text" class="form-control"
+                                                        id="{{course.courseCode}}_c_eid"
+                                                        data-old="{{course.convenor.eid}}"
+                                                        data-value="{{course.convenor.eid}}"
+                                                        data-course="{{course.courseCode}}"
+                                                        data-type="eid"/>
+                                                <button id="{{course.courseCode}}_c_cancel" data-course="{{course.courseCode}}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="processing" style="display:none">
+                                                <div class="text-info loading">
+                                                    <i class="fas fa-sync fa-spin"></i>
+                                                    <span>Updating...</span>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if course.hasVulaSite %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Vula Site">
+                                                    <img src="/optout/public/build/images/vula.png" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                            {% if course.hasOCSeries %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Lecture Recording Series">
+                                                    <img src="/optout/public/build/images/logo-opencast.png" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                            {% if course.hasAmathubaSite %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Amathuba Site">
+                                                    <img src="/optout/public/build/images/amathuba.svg" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <table class="table" id="tbl_s2" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 120px;">Course</th>
+                                    <th style="width: 40%;">Convenor</th>
+                                    <th class="text-center" style="width: 40%;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in details.courses if course.semester == 's2' %}
+                                    <tr>
+                                        <td>
+                                            <label>
+                                                <strong {% if not course.eligble %}style="color:#888"{% endif %}>
+                                                {{course.courseCode}}
+                                                </strong>
+                                            </label>
+                                        </td>
+                                        <td class="convenor" id="{{course.courseCode}}_convenor">
+                                            <div class="display">
+                                                <strong>{{course.convenor.name}}</strong><br>
+                                                <small class="text-lowercase">{{course.convenor.email}}</small>
+                                            </div>
+                                            {% if authenticated.a and (not readonly_s2) %}
+                                            <div class="btn">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-course="{{course.courseCode}}" data-target="#changeModal">
+                                                    <i class="fas fa-user-edit"></i> Change
+                                                </button>
+                                            </div>
+                                            <div class="auto" style="display:none">
+                                                <input type="text" class="form-control"
+                                                        id="{{course.courseCode}}_c_eid"
+                                                        data-old="{{course.convenor.eid}}"
+                                                        data-value="{{course.convenor.eid}}"
+                                                        data-course="{{course.courseCode}}"
+                                                        data-type="eid"/>
+                                                <button id="{{course.courseCode}}_c_cancel" data-course="{{course.courseCode}}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="processing" style="display:none">
+                                                <div class="text-info loading">
+                                                    <i class="fas fa-sync fa-spin"></i>
+                                                    <span>Updating...</span>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if course.hasVulaSite %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Vula Site">
+                                                    <img src="/optout/public/build/images/vula.png" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                            {% if course.hasOCSeries %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Lecture Recording Series">
+                                                    <img src="/optout/public/build/images/logo-opencast.png" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                            {% if course.hasAmathubaSite %}
+                                                <span style="padding: 6px;display: inline-block;" title="{{course.courseCode}} has a Amathuba Site">
+                                                    <img src="/optout/public/build/images/amathuba.svg" style="width: 22px;height: 22px;"/>
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <br/>
+                    {# {% if not readonly %}
+                        <div class="row justify-content-center">
+                            <div class="col-sm-6">
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <p>If your department as a whole chooses to opt-out from automated setup of lecture recording, please click the link below:</p>
+                                        <div style="text-align:center;">
+                                            <a href="{{out_link}}" title="Opt out of automated lrecture scheduling" class="btn btn-danger">Opt-out for the department</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %} #}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form id="loginForm" method="post" action="/optout/view/{{hash}}">
+                    <input type="hidden" id="type" name="type" value="login"/>
+                    <div class="modal-header">
+                        <h5 class="modal-title">Login</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <p style="margin-bottom: 0px;">Please login with your staff number (without @wf.uct.ac.za) and network password:</p>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="eid" id="eid" value="" placeholder="Staff Number">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <input type="password" class="form-control" name="pw" id="pw" placeholder="Password">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/tmpl.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/moment.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/optout/assets/js/jquery.autocomplete.min.js') }}"></script>
+    <script>
+        $(function() {
+            $('#semester-select > a').on('click',function(event){
+                event.preventDefault();
+                var $el = $(this);
+                if (!$el.hasClass('badge-info')) {
+                    $('#semester-select > a')
+                        .addClass('badge-light').removeClass('badge-info')
+                        .children('.badge').addClass('badge-dark').removeClass('badge-light');
+                    $el.addClass('badge-info').removeClass('badge-light')
+                        .children('.badge').addClass('badge-light').removeClass('badge-dark');
+                    $('.table-responsive table').hide();
+                    $('#tbl_'+ $el.attr('rel')).show();
+                }
+            });
+        });
+    </script>
+    {% if authenticated.a and ((not readonly_s1) or (not readonly_s2)) %}
+    <script>
+        var changeTimer = false, field = null;
+
+        $(function() {
+
+            $('.convenor > .btn > button').on('click', function(event){
+                event.preventDefault();
+                const _btn = $(this);
+                $(`#${_btn.data('course')}_convenor .display, #${_btn.data('course')}_convenor .btn, #${_btn.data('course')}_convenor .processing`).hide();
+                $(`#${_btn.data('course')}_convenor .auto`).show();
+                $(`#${_btn.data('course')}_c_eid`).val('').focus();
+            });
+
+            $('.convenor > .auto > button').on('click', function(event){
+                event.preventDefault();
+                const _btn = $(this);
+                $(`#${_btn.data('course')}_convenor .display, #${_btn.data('course')}_convenor .btn`).show();
+                $(`#${_btn.data('course')}_convenor .auto, #${_btn.data('course')}_convenor .processing`).hide();
+            });
+
+            $('.convenor > .auto > input').autocomplete({
+                lookup: function (query, done) {
+                    $.get(`/optout/search/d2l/list/${query}`, function(data, status){
+                        try {
+                            var result = {
+                                suggestions: data['data'].map(function(el) {
+                                    return { 'value': `${el['name']}, ${el['mail']} (${el['CN']})`, 'data': el };
+                                })
+                            };
+                            done(result);
+                       } catch ({ name, message }) {
+                            // console.log(name); // "TypeError" - not needed
+                       }
+                    })
+                    .fail(function() {
+                        console.log('Could not search for users');
+                    })
+                },
+                lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
+                    var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
+                    return re.test(suggestion.value);
+                },
+                onSelect: function(suggestion) {
+                    const _el = $(this);
+                    let _data = suggestion.data;
+                        _data['course'] = _el.data('course');
+                        _data['invalid'] = false;
+                    _el.data('value', _data['CN']);
+                    triggerSubmitData(_data);
+                },
+                onInvalidateSelection: function() {
+                    const _el = $(this);
+                    triggerSubmitData({ invalid: true, course: _el.data('course') });
+
+                    console.log('onInvalidateSelection');
+                }
+            });
+
+            // Function to handle async submission
+            function triggerSubmitData(data) {
+                console.log(data);
+
+                if (data['invalid']) {
+                    $(`#${data['course']}_convenor .display, #${data['course']}_convenor .btn`).show();
+                    $(`#${data['course']}_convenor .auto, #${data['course']}_convenor .processing`).hide();
+                    return;
+                }
+
+                $(`#${data['course']}_convenor .display, #${data['course']}_convenor .btn, #${data['course']}_convenor .auto`).hide();
+                $(`#${data['course']}_convenor .processing`).show();
+                submitDataAsync(data)
+                    .then(() => {
+                        console.log('Data submission complete');
+                        $(`#${data['course']}_convenor .display`).html(`<div class="display">`+
+                                `<strong>${data['name']}</strong><br>`+
+                                `<small class="text-lowercase">${data['mail']}</small>`+
+                            `</div>`);
+                    })
+                    .catch((error) => {
+                        console.log('Data submission failed:', error);
+                    })
+                    .finally(() => {
+                        $(`#${data['course']}_convenor .display, #${data['course']}_convenor .btn`).show();
+                        $(`#${data['course']}_convenor .auto, #${data['course']}_convenor .processing`).hide();
+                    });
+            }
+        });
+
+        function submitDataAsync(data) {
+            const _el = $(`#${data['course']}_c_eid`);
+            let d = [{"course": data['course'],
+                    "changes": [{
+                        "field": 'convenorEid',
+                        "from": _el.data('old'), "to": _el.data('value')}]}];
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    headers: {"x-entity-hash": "{{hash}}"},
+                    url: "/optout/api/v0/dept/{{dept}}",
+                    type: 'PATCH',
+                    data: JSON.stringify(d),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        console.log('Success:', response);
+                        resolve(response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log('Error:', error);
+                        reject(error);
+                    },
+                    complete: function () {
+                        console.log('complete');
+                    }
+                });
+            });
+        }
+    </script>
+    {% endif %}
+{% include 'footer.html' %}
+{% include 'html_end.html' %}

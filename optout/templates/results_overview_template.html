@@ -1,0 +1,160 @@
+<script type="text/x-tmpl" id="tmpl-table">
+    {% var current = Math.ceil(o.offset / o.limit); if (isNaN(current)) { current = 1; }
+           total_pages = Math.ceil(o.total / o.limit); if (isNaN(total_pages)) { total_pages = 1; } %}
+
+    <form id="search_form">
+        <div class="row form-row justify-content-end" style="position:relative;">
+            <div class="col-6">
+                <div class="col-auto">
+                    <div class="input-group mb-2">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control" id="series_filter" placeholder="Search..." value="{%=o.filter%}">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-dark"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div id="filter-survey">
+                    <div id="set1">
+                        <a href="#" rel="all" class="badge badge-pill {%  if (o.type =="all") { %}badge-primary{% } else { %}badge-light{% } %}">All <span class="badge badge-light">{%=o.cnt_all%}</span></a>
+                        <a href="#" rel="faculty" class="badge badge-pill {%  if (o.type =="faculty") { %}badge-primary{% } else { %}badge-light{% } %}">Faculty <span class="badge badge-light">{%=o.cnt_faculty%}</span></a>
+                        <a href="#" rel="dept" class="badge badge-pill {%  if (o.type =="dept") { %}badge-primary{% } else { %}badge-light{% } %}">Department <span class="badge badge-light">{%=o.cnt_dept%}</span></a>
+                        <a href="#" rel="course" class="badge badge-pill {%  if (o.type =="course") { %}badge-primary{% } else { %}badge-light{% } %}">Course <span class="badge badge-light">{%=o.cnt_course%}</span></a>
+                    </div>
+                    <div id="set2">
+                        <a href="#" rel="all" class="badge badge-pill {%  if (o.action =="all") { %}badge-primary{% } else { %}badge-light{% } %}">All</a>
+                        <a href="#" rel="s_0" class="badge badge-pill {%  if (o.action =="0") { %}badge-primary{% } else { %}badge-light{% } %}">Not Sent<span class="badge badge-light">{%=o.cnt_0%}</span></a>
+                        <a href="#" rel="s_1" class="badge badge-pill {%  if (o.action =="1") { %}badge-primary{% } else { %}badge-light{% } %}">Sent<span class="badge badge-light">{%=o.cnt_1%}</span></a>
+                        <a href="#" rel="s_2" class="badge badge-pill {%  if (o.action =="2") { %}badge-primary{% } else { %}badge-light{% } %}">Error<span class="badge badge-light">{%=o.cnt_2%}</span></a>
+                        <a href="#" rel="s_3" class="badge badge-pill {%  if (o.action =="3") { %}badge-primary{% } else { %}badge-light{% } %}">Incomplete<span class="badge badge-light">{%=o.cnt_3%}</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <table class="main-tbl" data-current="{%=(current+1)%}" data-total="{%=o.total%}" data-offset="{%=o.offset%}" data-count="{%=o.count%}" data-limit="{%=o.limit%}">
+        <thead>
+            <tr>
+                <th style="width: 100px;" class="sort {%=sort_dir(o.order,'code')%}" data-rel="code">
+                    <span>
+                        Code
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 420px;" class="sort {%=sort_dir(o.order,'convener')%}" data-rel="convener">
+                    <span>
+                        Convener(s)
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 140px;" class="sort {%=sort_dir(o.order,'updated_at')%}" data-rel="updated_at">
+                    <span>
+                        Last Updated
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 80px;" class="sort {%=sort_dir(o.order,'type')%}" data-rel="type">
+                    <span>
+                        Type
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 80px;" class="sort {%=sort_dir(o.order,'state')%}" data-rel="state">
+                    <span>
+                        State
+                        <i></i>
+                    </span>
+                </th>
+                <th style="width: 80px;">
+                    <span>
+                        Actions
+                        <i></i>
+                    </span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {%  if (o.result) {
+                    include('tmpl-row', o.result);
+                } else {
+                    include('tmpl-row-loading', {});
+                }
+            %}
+        </tbody>
+    </table>
+    <div class="row">
+        <div class="col-md-8">
+            <!--p>{%=total_pages%} - {%=current%} ({%=o.offset%}) - {%=o.count%} - {%=o.limit%}</p-->
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a class="page-link {% if (current == 1){ print("disabled"); } %}" {% if (current == 1){ %}aria-disabled="true"{% } %} href="#" id="page_prev" rel="prev" data-add="-1"><i class="fas fa-chevron-left"></i></a></li>
+                    {% $.each( pages(o.total, o.offset, o.limit), function( i, v ) { %}
+                        <li class="page-item{%=(isNaN(v)?' disabled': (v==(current+1)?' active':''))%}"><a class="page-link" href="#" rel='{%=(isNaN(v)?'spacer':v)%}'>{%=v%}</a></li>
+                    {% }); %}
+                    <li class="page-item">
+                        <a class="page-link {% if (current == total_pages){ print("disabled"); } %}" {% if (current == 1){ %}aria-disabled="true"{% } %} href="#" id="page_next" rel="next" data-add="1"><i class="fas fa-chevron-right"></i></a></li>
+                </ul>
+            </nav>
+        </div>
+        <!--div class="col-md-4 text-right">
+            <select>
+                {% $.each([10, 20, 50, 100], function( i, v ) { %}
+                <option value="{%=v%}">{%=v%}</option>
+                {% }); %}
+            </select>
+        </div-->
+    </div>
+</script>
+
+<script type="text/x-tmpl" id="tmpl-row">
+    {% if (o.length == 0) { %}
+    <tr>
+        <td colspan="6">No entries found matching search criteria.</td>
+    </tr>
+    {% } else {
+        $.each(o, function( i, row ) { %}
+    <tr>
+        <td style="padding: 0px;">
+            <a href="{%=row.hash%}" style="display:block;padding:10px;" target="_blank">{%=row.code%}</a>
+        </td>
+        <td>
+            <div style="display:inline-block; width:50%;float: left;">{%=row.mail_name%}</div>
+            <div style="display:inline-block; width:50%;">{%=row.mail_to%}</div>
+        </td>
+        <td>
+            {% if (row.updated_at == '1970-01-01 00:00:00') { %}-{% } else { %}
+            {%=moment(row.updated_at).format('YYYY-MM-DD HH:mm')%}
+            {% } %}
+        </td>
+        <td>{%=row.type%}</td>
+        <td>{%
+            print("</a><span>", true);
+            switch (row.state) {
+                case '-1' : print("No mail"); break;
+                case '0' : print("Not sent yet"); break;
+                case '1' : print("Sent", true); break;
+                case '2' : print("Error", true); break;
+                case '3' : print("No mail"); break;
+            }
+            print("</span>", true);
+        %}
+        </td>
+        <td>
+            <div class="col"><a style="font-size: large; padding: 5px;" target="_blank" href="https://srvubuclt001.uct.ac.za/optout/survey/{%=row.hash%}"><i class="fas fa-align-left"></i></a></div>
+            <!--div class="col"><a style="font-size: large; padding: 5px;" href="#"><i class="fas fa-plus-square"></i></a></div-->
+        </td>
+    </tr>
+    {% } ); } %}
+</script>
+
+<script type="text/x-tmpl" id="tmpl-row-loading">
+    <tr>
+        <td colspan="6">
+            <i class="fas fa-cog fa-spin fa-2x"></i>
+            <span style="display: inline-block; position: relative; left: 10px;top: -5px;">Loading results...</span>
+        </td>
+    </tr>
+</script>

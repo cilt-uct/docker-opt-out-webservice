@@ -1,0 +1,389 @@
+{% include 'html_start.html' %}
+    <div class="content">
+        {% include 'header.html' %}
+        {% if (authenticated.z) %}
+            {% if (authenticated.z.type == "admin") %}
+                <a name="top" class="anchor"></a>
+                <div class="container post">
+                    <div class="row no-gutters" style="position: absolute; top: -38px; width: 100%;">
+                        <div class="col-sm-8" style="padding-top: 10px;padding-left: 84px;">
+                            <span style="color: #222;font-size: 0.8em;">Hi {{authenticated.z.name}},</span>
+                        </div>
+                        <div class="col-sm-4 align-self-end">
+                            <ul class="nav nav-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="https://srvubuclt001.uct.ac.za/optout/admin">Courses</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="https://srvubuclt001.uct.ac.za/optout/series">Series</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+        <div class="container post">
+            <div class="row post-body">
+                <div class="col-md-12 post-title">
+                    <h3><span style="color: #5caad2;">Recordings:</span>&nbsp;&nbsp;&nbsp;&nbsp;{{dublincore.title|default(title)}}</h3>
+                    <br/>
+                    <div class="row series">
+                        <div class="col-md-8">
+                            <div class="form-group row">
+                                <label class="col-md-2 control-label text-right" for="txt_creator">Creator:</label>
+                                <div class="col-md-2 txt">
+                                    <div class="input" style="overflow:hidden">{{ext.creator_id|default(username)|upper}}</div>
+                                </div>
+                                {%  if user is not empty %}
+                                    {%  if user.first_name is not empty %}
+                                        <div class="col-md-6 txt" style="padding:0px 0.2em;">
+                                            <div class="input">
+                                                {{user.first_name}} {{user.last_name}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 txt" style="padding: 0.1em 0.6em; font-size: 18px;">
+                                            {% set status = user.status|lower|replace({'inactive': 'inactive ', 'thirdparty': 'third party'}) %}
+                                            {% if 'inactive' in status %}
+                                                <span class="badge badge-secondary">{{status|capitalize}}</span>
+                                            {% elseif 'staff' in status %}
+                                                <span class="badge badge-primary">{{status|capitalize}}</span>
+                                            {% elseif 'guest' in status %}
+                                                <span class="badge badge-light">{{status|capitalize}}</span>
+                                            {% elseif 'third party' in status %}
+                                                <span class="badge badge-dark">{{status|capitalize}}</span>
+                                            {% else %}
+                                                <span class="badge badge-info">{{status|capitalize}}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="col-md-8 txt" style="padding:0px 0.2em;">
+                                            <div class="input">
+                                                {{dublincore.creator|default(creator)|join(', ')}}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
+                            <!--div class="form-group row">
+                                <label class="col-md-2 control-label text-right" for="txt_contributor">Contributor:</label>
+                                <div class="col-md-10 txt">
+                                    <div class="input">{{dublincore.contributor|default(contributor)|join(', ')}}</div>
+                                </div>
+                            </div-->
+                            <div class="form-group row">
+                                <label class="col-md-2 control-label text-right" for="txt_notification"><i class="fas"></i>Notification:</label>
+                                <div class="col-md-10 txt">
+                                    <input type="text" class="input" id="txt_notification" value="{{ext.notification_list|default('')|join(';')}}"/>
+                                </div>
+                            </div>
+                            <!--
+                            {% if (authenticated.z) %}
+                                {% if (authenticated.z.type == "admin") %}
+                                <div class="form-group row">
+                                    <label class="col-md-2 control-label text-right" for="txt_notes"><i class="fas"></i>Notes:</label>
+                                    <div class="col-md-10 txt">
+                                        <textarea id="txt_notes">{% for note in ext.series_notes|default([]) %}{{ note|replace({'|': "&#13;&#10;"})|raw }}{% endfor %}</textarea>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                            -->
+                            <div class="form-group row">
+                                <label class="col-md-2 control-label text-right" for="txt_retention" style="position: relative; top: 5px;"><i class="fas"></i>Retention:</label>
+                                <div class="col-md-6 txt">
+                                    <div id="btn_retention" class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                                        <label class="btn btn-secondary {% if (ext.retention_cycle|default('normal') == "normal") %}active{% endif %}">
+                                            <input type="radio" name="options" id="option-normal" autocomplete="off" data-val="normal" {% if (ext.retention_cycle|default('normal') == "normal") %}checked{% endif %}> Default (4 years)
+                                        </label>
+                                        <label class="btn btn-secondary {% if (ext.retention_cycle|default('normal') == "long") %}active{% endif %}">
+                                            <input type="radio" name="options" id="option-long" autocomplete="off" data-val="long" {% if (ext.retention_cycle|default('normal') == "long") %}checked{% endif %}> Long (8 years)
+                                        </label>
+                                        <label class="btn btn-secondary {% if (ext.retention_cycle|default('normal') == "forever") %}active{% endif %}">
+                                            <input type="radio" name="options" id="option-forever" autocomplete="off" data-val="forever" {% if (ext.retention_cycle|default('normal') == "forever") %}checked{% endif %}> Keep Forever
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 txt" id="txt_expiry_date">
+                                    {% if (ext.retention_cycle|default('normal') == "forever") %}
+                                        <span class="date"><u>Expires:</u> Never</span>
+                                    {% else %}
+                                        {% if (ext.series_expiry_date|default('') != "") %}
+                                        <span class="date"><u>Expires:</u> {{ext.series_expiry_date|date('l, j F Y')|default('')}}</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                            {% if ext.site_id is defined and ext.site_id matches '/^\d+$/' %}
+                                <small class="text-muted">Click to view in Amathuba:</small><br/>
+                                <a href="https://amathuba.uct.ac.za/d2l/home/{{ext.site_id|default('')}}" target="_blank"
+                                    class="btn btn-light btn-lg" role="button" aria-pressed="true"
+                                    {% if ext.site_id|default('')|length < 4 %}disabled{% endif %}>
+                                    <img src="{{ asset('/optout/public/build/images/amathuba.svg') }}" alt="Amathuba"/>
+                                </a>
+                            {% else %}
+                                <small class="text-muted">Click to view in Vula:</small><br/>
+                                <a href="https://vula.uct.ac.za/portal/site/{{ext.site_id|default('')}}" target="_blank"
+                                    class="btn btn-light btn-lg" role="button" aria-pressed="true"
+                                    {% if ext.site_id|default('')|length < 4 %}disabled{% endif %}>
+                                    <img src="{{ asset('/optout/public/build/images/vula.png') }}" alt="Vula"/>
+                                </a>
+                            {% endif %}
+                            </div>
+                            <div class="text-center" style="margin-top: 15px;">
+                            {% if (authenticated.z) %}
+                                {% if (authenticated.z.type == "admin") %}
+                                    <div class="emails">
+                                    {% if (emails.result|length > 0) %}
+                                        {% for mail in emails.result %}
+                                            {% if mail.type == "notification" %}
+                                                <label>
+                                                    <a href="#" class="label label-default">Notification</a>
+                                                    {% if mail.state == "0" %}<span>To send ...</span>{% endif %}
+                                                    {% if mail.state == "1" %}<span>Sent on {{mail.sent|date("Y-m-d H:i:s")}}</span>{% endif %}
+                                                    {% if mail.state == "2" %}<span>Error sending mail</span>{% endif %}
+                                                </label>
+                                            {% elseif mail.type == "confirm" %}
+                                                <label>
+                                                    <a href="#" class="label label-success">Clean</a>
+                                                    {% if mail.state == "0" %}<span>To send</span>{% endif %}
+                                                    {% if mail.state == "1" %}<span>Sent on {{mail.sent|date("Y-m-d H:i:s")}}</span>{% endif %}
+                                                    {% if mail.state == "2" %}<span>Error sending mail</span>{% endif %}
+                                                </label>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    </div>
+                                    {% if batch > 0 %}
+                                        {% if (emails.result|length == 0) %}
+                                            <button type="button" class="btn btn btn-outline-info btn-sm" id="btn_send_notification" style="margin: 15px 0px;">
+                                                <i class="far fa-envelope-open"></i> Send Notification
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <br/>
+                    <!--pre>{{ events | json_encode(constant('JSON_PRETTY_PRINT')) | e }}</pre-->
+                    {% if (events.total > 0) %}
+                        {% if (events.result|length > 0) %}
+                            <table id="series-events" class="main-tbl" style="margin-left:20px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 220px;" class="sort" data-rel="title">
+                                            <span>
+                                                Title
+                                                <i></i>
+                                            </span>
+                                        </th>
+                                        <th style="width: 220px;" class="sort" data-rel="created">
+                                            <span>
+                                                Created
+                                                <i></i>
+                                            </span>
+                                        </th>
+                                        <th style="width: 120px;" class="sort" data-rel="venue">
+                                            <span>
+                                                Venue
+                                                <i></i>
+                                            </span>
+                                        </th>
+                                        <th style="width: 280px;" class="text-left">Downloads
+                                            <!--div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                                                <label class="btn btn-secondary">
+                                                    <input type="radio" name="options" id="option1" autocomplete="off"><i class="fas fa-grip-vertical"></i></i>
+                                                </label>
+                                                <label class="btn btn-secondary active">
+                                                    <input type="radio" name="options" id="option2" autocomplete="off" checked> <i class="fas fa-table"></i>
+                                                </label>
+                                            </div-->
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for event in events.result %}
+                                    {% if event.metadata is empty %}
+                                        <tr data-id="{{event.id|default('')}}">
+                                            <!-- td colspan="4">
+                                                <pre style="white-space: pre-wrap; margin: 0;">{{ event|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                            </td-->
+                                        </tr>
+                                    {% else %}
+                                        <tr data-id="{{event.id}}">
+                                            <td data-sort="{{event.metadata.title}}">{{event.metadata.title}}</td>
+                                            <td data-sort="{{event.start|default('')}}">
+                                                {% if event.start|default('') is empty %}&nbsp;{% else %}{{event.start|date("l, j F Y g:ia")}}{% endif %}</td>
+                                            <td data-sort="{{event.metadata.location|default('')}}">{{event.metadata.location|default('')}}</td>
+                                            <td data-ref="download">
+                                                <div class="row no-gutters">
+                                                {% for track in event.media.downloads %}
+                                                    <div class="col">
+                                                        <a href="{{track.url}}" target="_blank"
+                                                            style="background-image:url('{% if 'pic-in-pic' in track.flavor %}{{ asset('/optout/public/build/images/pic_in_pic.png') }}{% elseif 'composite' in track.flavor %}{{ asset('/optout/public/build/images/side_by_side.png') }}{% elseif track.img|trim %}{{track.img}}{% else %}{{ asset('/optout/public/build/images/presentation.png') }}{% endif %}')">
+                                                            <i class="fas fa-arrow-alt-circle-down"></i>
+                                                        </a>
+                                                    </div>
+                                                {% endfor %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <div class="alert alert-info" role="alert">
+                                        <i class="fas fa-3x fa-exclamation-circle info"></i>
+                                        <span>There are no published recordings for this series.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                    {% else %}
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="alert alert-info" role="alert" style="padding: 1.25rem">
+                                    <i class="fas fa-3x fa-exclamation-circle info"></i>
+                                    <span>There are no published recordings for this series.</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'footer.html' %}
+    <script src="{{ asset('/optout/assets/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('/optout/assets/js/tmpl.js') }}"></script>
+    <script src="{{ asset('/optout/assets/js/moment.min.js') }}"></script>
+    <script src="{{ asset('/optout/assets/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('/optout/assets/js/jquery.email.multiple.js') }}"></script>
+    <script src="{{ asset('/optout/assets/js/utils.js') }}"></script>
+
+    <script>
+        var tmp_inp = '', txt_notes_val;
+        function sortTable(tid) {
+            var $tbl = $(tid);
+            $tbl.find('th.asc, th.desc')
+        }
+
+        function comparer(index) {
+            return function(a, b) {
+                var valA = getCellValue(a, index), valB = getCellValue(b, index)
+                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+            }
+        }
+        function getCellValue(row, index){ return $(row).children('td').eq(index).data("sort"); }
+
+        $(function() {
+
+            $("#series-events").on('click','th.sort', function(event){
+                event.preventDefault();
+                    event.preventDefault();
+                    var $el = $(this);
+
+                    if ($el.is('.asc,.desc')) {
+                        $el.toggleClass('asc desc');
+                    } else {
+                        $el.addClass('asc').siblings().removeClass('asc desc');
+                    }
+
+                    var table = $(this).parents('table').eq(0)
+                    var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()))
+                    this.asc = $(this).hasClass('asc');
+                    if (!this.asc){rows = rows.reverse()}
+                    for (var i = 0; i < rows.length; i++){table.append(rows[i])}
+            });
+
+            $("#txt_notification").on('change', function(event) {
+                    var i = $(this).val();
+                    if (i != tmp_inp) {
+                        tmp_inp = i;
+                        setSaving('label[for=txt_notification]');
+                        $.ajax({
+                            url: "/optout/api/v0/series/",
+                            method: 'PATCH',
+                            data: JSON.stringify({ 'action' : 'notification-list', 'hash' : '{{hash}}', 'val': tmp_inp }),
+                            dataType: 'json'
+                        }).done(function(data) {
+                            if (!data.success) {
+                                console.log(data);
+                                console.log("Could not save email");
+                                setError('label[for=txt_notification]');
+                            } else {
+                                setSaved('label[for=txt_notification]');
+                            }
+                        }).fail(function(xhr) {
+                            console.log(xhr);
+                            setError('label[for=txt_notification]');
+                        });
+                    }
+                }).email_multiple({ data: $('#txt_notification').val().split(';') });
+            tmp_inp = $('#txt_notification').val();
+
+            $('#txt_notes').on('change', function(event) {
+
+            });
+
+            $("#btn_retention").on('change', 'input[type="radio"]', function(event){
+                setSaving('label[for=txt_retention]');
+                $.ajax({
+                        url: "/optout/api/v0/series/",
+                        method: 'PATCH',
+                        data: JSON.stringify({ 'action' : 'retention', 'hash' : '{{hash}}', 'val': $(this).attr('id').split('-')[1] }),
+                        dataType: 'json'
+                    }).done(function(data) {
+                        if (!data.success) {
+                            setError('label[for=txt_retention]');
+                        } else {
+                            setSaved('label[for=txt_retention]');
+                        }
+                        $('#txt_expiry_date').html(tmpl('tmpl-date', data));
+                        $('#txt_expiry_date u').tooltip('dispose').tooltip();
+                    }).fail(function(xhr) {
+                        console.log(xhr);
+                        setError('label[for=txt_retention]');
+                    });
+            });
+
+            $('#btn_send_notification').on("click", function(event){
+
+                if (!$(this).hasClass('disabled')) {
+                    $(this).addClass('disabled').attr('aria-disabled',true).html('<i class="fas fa-cog fa-spin"></i> Sending notification...', true);
+
+                    $.ajax({
+                        url: "/optout/api/v0/series/",
+                        method: 'PATCH',
+                        data: JSON.stringify({"action" : "new_notfication", "hash" : "{{hash}}" }),
+                        dataType: 'json'
+                    }).done(function(data) {
+                        if (data.success) {
+                            $('#btn_send_notification').hide();
+                            $('.series .emails').append('<label><a href="#" class="label label-default">Notification</a><span>To send ...</span></label>');
+                        } else {
+                            $('#btn_send_notification').removeClass('disabled').attr('aria-disabled',false).html('<i class="far fa-envelope-open"></i> Send Notification', true);
+                            $('.series .emails').append('<label><a href="#" class="label label-danger">Failed</a><span>Failed to create email notification</span></label>');
+                        }
+                    }).fail(function(xhr) {
+                        console.log(xhr);
+                        $('#btn_send_notification').removeClass('disabled').attr('aria-disabled',false).html('<i class="far fa-envelope-open"></i> Send Notification', true);
+                        $('.series .emails').append('<label><a href="#" class="label label-danger">Failed</a><span>Failed to create email notification</span></label>');
+                    });
+                }
+            });
+        });
+    </script>
+    {{ source('series_view_templates.html') }}
+{% include 'html_end.html' %}
