@@ -243,15 +243,21 @@
                                 {% else %}
                                 <p>Hi,</p>
                                 {% endif %}
-                                <p>A new retention cycle policy has been implemented for lecture recording at UCT. Lecture videos will be retained for 4 years by default, with options to retain recordings for 8 years or keep them indefinitely. The selected retention period applies to all recordings within a recording series (set of recordings).</p>
-                                <p>The recordings for <strong>{{title}}</strong> are queued for deletion. As you are the contact person for this set of recordings, we would like you to review the set and decide if you want to keep them around for a bit longer.</p>
-                                <p><strong>If you take no action, these recordings will soon be deleted (on {{global_expiry_date|date("l, d F Y")}}).</strong></p>
-                                <p>On the 'view recordings' page, you will be able to download recordings (there are {{no_recordings}}) or extend the expiry date for the set, if you wish.</p>
+                                <p>As part of UCT's lecture recording retention process, recordings are retained for 4 years by default, with options to extend retention to 8 years or to retain recordings indefinitely. The selected retention period applies to all recordings within a recording series (set of recordings).</p>
+                                <p>The recordings for <strong>{{title}}</strong> have reached the end of their current retention period and are scheduled for deletion. As the designated contact person for this recording series, we ask that you review the recordings and decide whether they should be retained for a longer period.</p>
+                                <p>If no action is taken, the recordings will be permanently deleted on <u>{{global_expiry_date|date("l, d F Y")}}</u>.</p>
                                 {% if site_id|default('')|length > 0 %}
                                     {% if not '~' in site_id %}
                                     <p>You can also view the recordings from the "Lecture Recording" tool in <a href="https://vula.uct.ac.za/portal/site/{{site_id|default('')}}" target="_blank">Vula</a>.</p>
                                     {% endif %}
                                 {% endif %}
+                                <p>The series contains <strong>{{no_recordings}}</strong> recordings. On the <strong>View Recordings</strong> page, you can:</p>
+                                <p>
+                                    <ul>
+                                        <li>Download any recordings you wish to keep.</li>
+                                        <li>Extend the retention period for the entire recording series.</li>
+                                    </ul>
+                                </p>
                             </td>
                         </tr>
                         <tr>
@@ -270,8 +276,8 @@
 
 	                    <tr>
 	                        <td style="padding: 20px; font-family: sans-serif; font-size: 15px; line-height: 20px; color: #333333;">
-	                            <p>The next clean-up cycle is scheduled for <u>{{global_expiry_date|date("l, d F Y")}}</u>. On this date, all expired recordings will be deleted.</p>
-                                <p>For any queries, please feel free to contact us.</p>
+	                            <p>Please note that the next clean-up cycle is scheduled for <u>{{global_expiry_date|date("l, d F Y")}}</u>, when all recordings that have reached their expiry date will be permanently deleted.</p>
+                                <p>If you have any questions or require assistance, please feel free to contact us.</p>
                                 <p>Thank you,</p>
                                 <p>
                                     UCT Lecture Recording Team<br/>

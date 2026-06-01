@@ -563,15 +563,20 @@ class ApiController extends Controller
    */
   // Retention Service
   public function monitor_batch(Request $request) {
-      set_time_limit(3000);
-      switch ($request->getMethod()) {
-          case 'GET':
-              return $this->runBatchMonitor($request);
-              break;
-          default:
-              return new Response('Only GET supported right now', 405);
-      }
-      set_time_limit(30);
+        $max_execution_time = ini_get('max_execution_time');
+        ini_set('max_execution_time', 3600);
+        set_time_limit(3600);
+
+        switch ($request->getMethod()) {
+            case 'GET':
+                set_time_limit(30);
+                ini_set('max_execution_time', $max_execution_time);
+                return $this->runBatchMonitor($request);
+            default:
+                set_time_limit(30);
+                ini_set('max_execution_time', $max_execution_time);
+                return new Response('Only GET supported right now', 405);
+        }
   }
 
   private function runBatchMonitor(Request $request) {

@@ -765,12 +765,12 @@ class UIController extends Controller
             $data = $data['result'][0];
             // $hash = $data['hash'];
             $batch = (new OpencastRetentionBatch($data['batch']))->getBatch();
-            $str = $data['title'] .": Recording Expiry Notice";
+            $str = "Retention Review Required: " . $data['title'] . " (Expires: " .$batch['date_scheduled']->format('l, j F Y'). ")";
 
             $now = new \DateTime();
             $past_scheduled = ($now->diff($batch['date_scheduled'])->format('%R') == '-');
             if ($past_scheduled) {
-                $str .= " [Deleted]";
+                $str .= " [Cleaned]";
             }
             return new Response($str, 201);
         } else {
@@ -1065,153 +1065,131 @@ class UIController extends Controller
         }
 
         $ar = $ocService->getEventsForSeries($data['series_id']);
+        $data['events'] = $ar;
+
         if (isset($ar['result'])) {
 
-            $ar['result'] = array_filter($ar['result'], function($obj){
-                if (isset($obj['mediaType'])) {
-                    return ($obj['mediaType'] == "AudioVisual");
-                }
-                return false;
-            });
+            $func = function($event) use ($ocService) {
 
-            $func = function($event) {
+                if (isset($event['mediapackage'])) {
+                    $p = $event['mediapackage'];
+                    $event['id'] = $p['id'];
+                    $event['start'] = $p['start'];
 
-                if ($event['mediaType'] == "AudioVisual") {
-                    if (isset($event['mediapackage'])) {
-                        $p = $event['mediapackage'];
+                    $metadata = $ocService->getEventMetadata($event['id']);
+                    $event['metadata'] = $metadata;
 
-                        // get preview
-                        // $previews = $p['attachments']['attachment'];
-                        $previews = array_values(array_filter(
-                            array_map(function($track){
-                                $pass = false;
-                                if ((isset($track["mimetype"])) && (isset($track['type']))) {
-                                    $pass = ($track["mimetype"] == "image/jpeg") && strpos($track['type'], "search+preview");
-                                    if (isset($track["tags"]) && (gettype($track["tags"]) == "array")) {
-                                        if (count($track["tags"]) > 0) {
-                                            if (gettype($track["tags"]["tag"]) == 'string') {
-                                                $pass = $pass && ($track["tags"]["tag"] == "engage-download");
-                                            } else {
-                                                $pass = $pass && in_array("engage-download", $track["tags"]["tag"]);
-                                            }
+                    // get preview
+                    $previews = array_values(array_filter(
+                        array_map(function($track){
+                            $pass = false;
+                            if ((isset($track["mimetype"])) && (isset($track['type']))) {
+                                $pass = ($track["mimetype"] == "image/jpeg");
+                                if (isset($track["tags"]) && (gettype($track["tags"]) == "array")) {
+                                    if (count($track["tags"]) > 0) {
+                                        if (gettype($track["tags"]["tag"]) == 'string') {
+                                            $pass = $pass && ($track["tags"]["tag"] == "engage-download");
+                                        } else {
+                                            $pass = $pass && in_array("engage-download", $track["tags"]["tag"]);
                                         }
                                     }
                                 }
-
-                                if ($pass) {
-                                    return (object) array('flavor' => explode("/", $track['type'])[0],
-                                        'url' => str_replace('http:', 'https:', $track['url']),
-                                        'ref' => $track['ref']
-                                    );
-                                }
-                            }, $p['attachments']['attachment']), function($item) {
-                                return (gettype($item) != "NULL");
-                            }));
-
-                        // get downloads
-                        $downloads = $p['media']['track'];
-
-                        if (isset($downloads['id'])) {
-                            // single media track
-                            $track = $downloads;
-                            $is_atom = gettype($track["tags"]["tag"]) == "array" ? in_array("atom", $track["tags"]["tag"]) : $track["tags"]["tag"] == "atom";
-
-                            // "engage-download"
-                            if (isset($track["mimetype"]) && $is_atom) {
-                                if (($track["mimetype"] == "video/mp4") || ($track["mimetype"] == "video/avi")) {
-                                    $flavor = explode("/", $track['type'])[0];
-
-                                    $img = array_filter($previews,
-                                        function ($e) use (&$flavor) {
-                                            return $e->flavor == $flavor;
-                                        }
-                                    );
-
-                                    $downloads = array(array(
-                                        'flavor' => $flavor,
-                                        'quality' => implode(array_filter($track["tags"]["tag"], function($str) {
-                                                return(strpos($str, 'quality'));
-                                            })),
-                                        'img' => (count($img) > 0 ? array_values($img)[0]->url :''),
-                                        'url' => str_replace('http:', 'https:', $track['url']),
-                                        'video' => $track['video']['resolution']
-                                    ));
-                                }
                             }
 
-                        } else {
-                            $downloads = array_filter(
-                                array_map(function($track) use (&$previews) {
+                            if ($pass) {
+                                return (object) array('flavor' => explode("/", $track['type'])[0],
+                                    'url' => str_replace('http:', 'https:', $track['url']),
+                                    'ref' => $track['ref']
+                                );
+                            }
+                        }, $p['attachments']['attachment']), function($item) {
+                            return (gettype($item) != "NULL");
+                        }));
 
-                                    $is_atom = gettype($track["tags"]["tag"]) == "array" ? in_array("atom", $track["tags"]["tag"]) : $track["tags"]["tag"] == "atom";
+                    // Helper to process a single track
+                    $processTrack = function($track) use (&$previews) {
+                        // Filter out rtmp:// URLs
+                        if (isset($track['url']) && strpos($track['url'], 'rtmp://') === 0) {
+                            return null;
+                        }
 
-                                    // "engage-download"
-                                    if (isset($track["mimetype"]) && $is_atom) {
-                                        if (($track["mimetype"] == "video/mp4") || ($track["mimetype"] == "video/avi")) {
-                                            $flavor = explode("/", $track['type'])[0];
+                        $is_atom = isset($track["tags"]["tag"]) ?
+                            (gettype($track["tags"]["tag"]) == "array" ? in_array("atom", $track["tags"]["tag"]) : $track["tags"]["tag"] == "atom") : false;
 
-                                            $img = array_filter($previews,
-                                                function ($e) use (&$flavor) {
-                                                    return $e->flavor == $flavor;
-                                                }
-                                            );
-
-                                            return (object) array(
-                                                'flavor' => $flavor,
-                                                'quality' => implode(array_filter($track["tags"]["tag"], function($str) {
-                                                        return(strpos($str, 'quality'));
-                                                    })),
-                                                'img' => (count($img) > 0 ? array_values($img)[0]->url :''),
-                                                'url' => str_replace('http:', 'https:', $track['url']),
-                                                'video' => $track['video']['resolution']
-                                            );
-                                        }
+                        if (isset($track["mimetype"]) && $is_atom) {
+                            if (($track["mimetype"] == "video/mp4") || ($track["mimetype"] == "video/avi")) {
+                                $flavor = explode("/", $track['type'])[0];
+                                $img = array_filter($previews,
+                                    function ($e) use (&$flavor) {
+                                        return $e->flavor == $flavor;
                                     }
-                                }, $p['media']['track']), function($item) {
-                                    return (gettype($item) != "NULL");
-                                });
-                        }
-
-                        $q_ar = array_column($downloads, 'quality');
-
-                        if (count($q_ar) > 0) {
-                            if (array_search('high-quality', $q_ar) !== FALSE) {
-                                // we have high quality
-                                $downloads = array_filter($downloads, function($item) {
-                                    return ($item->quality == "high-quality") || ($item->quality == "");
-                                });
-                            } elseif (array_search('medium-quality', $q_ar) !== FALSE) {
-                                // we have medium quality
-                                $downloads = array_filter($downloads, function($item) {
-                                    return ($item->quality == "medium-quality") || ($item->quality == "");
-                                });
-                            } elseif (array_search('low-quality', $q_ar) !== FALSE) {
-                                // we have low quality
-                                $downloads = array_filter($downloads, function($item) {
-                                    return ($item->quality == "low-quality") || ($item->quality == "");
-                                });
+                                );
+                                return (object) array(
+                                    'id' => $track['id'],
+                                    //'ref' => $track['ref'],
+                                    'flavor' => $flavor,
+                                    'quality' => isset($track["tags"]["tag"]) ? implode(array_filter((array)$track["tags"]["tag"], function($str) {
+                                        return(strpos($str, 'quality'));
+                                    })) : '',
+                                    'img' => (count($img) > 0 ? array_values($img)[0]->url :''),
+                                    'url' => str_replace('http:', 'https:', $track['url']),
+                                    'video' => isset($track['video']['resolution']) ? $track['video']['resolution'] : ''
+                                );
                             }
                         }
+                        return null;
+                    };
 
-                        usort($downloads, function($a, $b) { return $a->flavor < $b->flavor; });
-                        $event['media']  = (object) array('previews' => $previews, 'downloads' => array_values($downloads));
+                    $downloads = $p['media']['track'];
+                    if (isset($downloads['id'])) {
+                        // single media track
+                        $single = $processTrack($downloads);
+                        $downloads = $single ? array($single) : array();
+                    } else {
+                        $downloads = array_filter(
+                            array_map($processTrack, $p['media']['track']),
+                            function($item) { return (gettype($item) != "NULL") && ($item !== null); }
+                        );
                     }
 
-                    // remove unwanted fields
-                    unset($event['mediapackage']);
-                    unset($event['ocMediapackage']);
-                    unset($event['segments']);
-                    unset($event['keywords']);
-                    unset($event['score']);
-                    unset($event['org']);
+                    $q_ar = array_column($downloads, 'quality');
 
-                    return $event;
+                    if (count($q_ar) > 0) {
+                        if (array_search('high-quality', $q_ar) !== FALSE) {
+                            $downloads = array_filter($downloads, function($item) {
+                                return ($item->quality == "high-quality") || ($item->quality == "");
+                            });
+                        } elseif (array_search('medium-quality', $q_ar) !== FALSE) {
+                            $downloads = array_filter($downloads, function($item) {
+                                return ($item->quality == "medium-quality") || ($item->quality == "");
+                            });
+                        } elseif (array_search('low-quality', $q_ar) !== FALSE) {
+                            $downloads = array_filter($downloads, function($item) {
+                                return ($item->quality == "low-quality") || ($item->quality == "");
+                            });
+                        }
+                    }
+
+                    usort($downloads, function($a, $b) { return $a->flavor < $b->flavor; });
+                    // $event['media']  = (object) array('previews' => $previews, 'downloads' => array_values($downloads));
+                    $event['media']  = (object) array('downloads' => array_values($downloads));
                 }
+
+                // remove unwanted fields
+                unset($event['mediapackage']);
+                unset($event['org']);
+                unset($event['modified']);
+                unset($event['acl']);
+                unset($event['type']);
+                unset($event['live']);
+                unset($event['dc']);
+
+                return $event;
             };
 
             $event_array = array_values(array_map($func, $ar['result']));
             try {
-                usort($event_array, function($a, $b) { return $a['dcCreated'] > $b['dcCreated']; });
+                usort($event_array, function($a, $b) { return $a['start_date'] > $b['start_date']; });
             } catch (\Exception $e) { }
 
             $data['events'] = (object) array('offset' => $ar['offset'], 'limit' => $ar['limit'], 'total' => $ar['total'], //'query' => $ar['query'],

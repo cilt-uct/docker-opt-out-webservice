@@ -12,10 +12,10 @@
                         <div class="col-sm-4 align-self-end">
                             <ul class="nav nav-tabs">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="https://srvubuclt001.uct.ac.za/optout/admin/">Courses</a>
+                                    <a class="nav-link" href="https://srvubuclt001.uct.ac.za/optout/admin">Courses</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link active" href="https://srvubuclt001.uct.ac.za/optout/series/">Series</a>
+                                    <a class="nav-link active" href="https://srvubuclt001.uct.ac.za/optout/series">Series</a>
                                 </li>
                             </ul>
                         </div>
@@ -118,14 +118,21 @@
                         </div>
                         <div class="col-md-4">
                             <div class="text-center">
-                                {% if ext.site_id|default('')|length > 0 %}
+                            {% if ext.site_id is defined and ext.site_id matches '/^\d+$/' %}
+                                <small class="text-muted">Click to view in Amathuba:</small><br/>
+                                <a href="https://amathuba.uct.ac.za/d2l/home/{{ext.site_id|default('')}}" target="_blank"
+                                    class="btn btn-light btn-lg" role="button" aria-pressed="true"
+                                    {% if ext.site_id|default('')|length < 4 %}disabled{% endif %}>
+                                    <img src="{{ asset('/optout/public/build/images/amathuba.svg') }}" alt="Amathuba"/>
+                                </a>
+                            {% else %}
                                 <small class="text-muted">Click to view in Vula:</small><br/>
                                 <a href="https://vula.uct.ac.za/portal/site/{{ext.site_id|default('')}}" target="_blank"
                                     class="btn btn-light btn-lg" role="button" aria-pressed="true"
                                     {% if ext.site_id|default('')|length < 4 %}disabled{% endif %}>
                                     <img src="{{ asset('/optout/public/build/images/vula.png') }}" alt="Vula"/>
                                 </a>
-                                {% endif %}
+                            {% endif %}
                             </div>
                             <div class="text-center" style="margin-top: 15px;">
                             {% if (authenticated.z) %}
@@ -165,7 +172,7 @@
                     </div>
 
                     <br/>
-
+                    <!--pre>{{ events | json_encode(constant('JSON_PRETTY_PRINT')) | e }}</pre-->
                     {% if (events.total > 0) %}
                         {% if (events.result|length > 0) %}
                             <table id="series-events" class="main-tbl" style="margin-left:20px;">
@@ -202,26 +209,34 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                            {% for event in events.result %}
-                                <tr data-id="{{event.id}}">
-                                    <td data-sort="{{event.dcTitle}}">{{event.dcTitle}}</td>
-                                    <td data-sort="{{event.dcCreated|default('')}}">
-                                        {% if event.dcCreated|default('') is empty %}&nbsp;{% else %}{{event.dcCreated|date("l, j F Y g:ia")}}{% endif %}</td>
-                                    <td data-sort="{{event.dcSpatial|default('')}}">{{event.dcSpatial|default('')}}</td>
-                                    <td data-ref="download">
-                                        <div class="row no-gutters">
-                                        {% for track in event.media.downloads %}
-                                            <div class="col">
-                                                <a href="{{track.url}}" target="_blank"
-                                                    style="background-image:url('{% if 'pic-in-pic' in track.flavor %}{{ asset('/optout/public/build/images/pic_in_pic.png') }}{% elseif 'composite' in track.flavor %}{{ asset('/optout/public/build/images/side_by_side.png') }}{% elseif track.img|trim %}{{track.img}}{% else %}{{ asset('/optout/public/build/images/presentation.png') }}{% endif %}')">
-                                                    <i class="fas fa-arrow-alt-circle-down"></i>
-                                                </a>
-                                            </div>
-                                        {% endfor %}
-                                        </div>
-                                    </td>
-                                </div>
-                            {% endfor %}
+                                {% for event in events.result %}
+                                    {% if event.metadata is empty %}
+                                        <tr data-id="{{event.id|default('')}}">
+                                            <!-- td colspan="4">
+                                                <pre style="white-space: pre-wrap; margin: 0;">{{ event|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                                            </td-->
+                                        </tr>
+                                    {% else %}
+                                        <tr data-id="{{event.id}}">
+                                            <td data-sort="{{event.metadata.title}}">{{event.metadata.title}}</td>
+                                            <td data-sort="{{event.start|default('')}}">
+                                                {% if event.start|default('') is empty %}&nbsp;{% else %}{{event.start|date("l, j F Y g:ia")}}{% endif %}</td>
+                                            <td data-sort="{{event.metadata.location|default('')}}">{{event.metadata.location|default('')}}</td>
+                                            <td data-ref="download">
+                                                <div class="row no-gutters">
+                                                {% for track in event.media.downloads %}
+                                                    <div class="col">
+                                                        <a href="{{track.url}}" target="_blank"
+                                                            style="background-image:url('{% if 'pic-in-pic' in track.flavor %}{{ asset('/optout/public/build/images/pic_in_pic.png') }}{% elseif 'composite' in track.flavor %}{{ asset('/optout/public/build/images/side_by_side.png') }}{% elseif track.img|trim %}{{track.img}}{% else %}{{ asset('/optout/public/build/images/presentation.png') }}{% endif %}')">
+                                                            <i class="fas fa-arrow-alt-circle-down"></i>
+                                                        </a>
+                                                    </div>
+                                                {% endfor %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
                                 </tbody>
                             </table>
                         {% else %}

@@ -56,21 +56,47 @@ class OCRestService
         return $data;
     }
 
-    //https://media.uct.ac.za/admin-ng/event/events.json?filter=textFilter:2ef7d00a-7fc3-420a-9c4b-238c029d25e3,series:2ef7d00a-7fc3-420a-9c4b-238c029d25e3&limit=50&offset=0&sort=series_name:ASC
     public function getEventsForSeries($seriesId) {
 
-        // $url = $this->ocHost . "/admin-ng/event/events.json?filter=series:$seriesId&sort=technical_start:ASC";
-        // series.{format:xml|json}?id={id}&q={q}&episodes=false&sort={sort}&limit=20&offset=0&admin=false
-        $url = $this->ocHost . "/search/series.json?id=$seriesId&episodes=true&limit=0&admin=true&sort=TITLE";
+        $url = $this->ocHost . "/search/episode.json?sid=$seriesId&sname=&sort=title%20desc&limit=500&offset=0&sign=false&live=false";
 
+        $raw = $this->getRequest($url);
+        // error_log("[OCRestService] RAW: " . $raw);
+
+        $data = json_decode($raw, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("[OCRestService] json_decode error: " . json_last_error_msg());
+        }
+        // Debug: log the raw response
+        // error_log("[OCRestService] getEventsForSeries json_last_error: " . json_last_error());
+        // error_log("[OCRestService] getEventsForSeries data: " . json_encode($data, true));
+
+        if (!is_array($data) || !sizeof($data)) {
+            error_log("[OCRestService] Decoded data is empty or not array");
+            return [];
+        }
+
+        return $data;
+    }
+
+    public function getEventMetadata($eventId) {
+        $url = $this->ocHost . "/api/events/$eventId/metadata";
         $data = json_decode($this->getRequest($url), true);
         if (!is_array($data) || !sizeof($data)) {
             return [];
         }
-        if ($data['search-results']) {
-            return $data['search-results'];
+        // Expecting $data to be an array of catalogs, each with 'fields'
+        $result = [];
+        foreach ($data as $catalog) {
+            if (isset($catalog['fields']) && is_array($catalog['fields'])) {
+                foreach ($catalog['fields'] as $field) {
+                    if (isset($field['id'])) {
+                        $result[$field['id']] = $field['value'];
+                    }
+                }
+            }
         }
-        return $data;
+        return $result;
     }
 
     /**
@@ -78,7 +104,7 @@ class OCRestService
      */
     public function getEventForPlayback($eventId) {
 
-        $url = $this->ocHost . "/search/episode.json?id=596ff927-79bc-4a15-a39f-80ea8c7f16e0"; //"/search/episode.json?id=$eventId";
+        $url = $this->ocHost . "/search/episode.json?id=$eventId";
 
         $data = json_decode($this->getRequest($url), true);
         if (!is_array($data) || !sizeof($data)) {
