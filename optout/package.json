@@ -27,7 +27,7 @@
     "@webcomponents/webcomponentsjs": "^2.4.3",
     "copy-webpack-plugin": "^14.0.0",
     "jquery": "^3.5.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "webpack-notifier": "^1.8.0"
   },
   "dependencies": {
