@@ -66,7 +66,7 @@ class UIController extends Controller
             // $hash = $data['hash'];
 
             if ($data['course'] === null ) {
-                $dept = new Department($data['dept'], $data['hash'], $data['year'], false);
+                $dept = new Department($data['dept'], $data['hash'], $data['year'], false, $this->logger);
                 $details = $dept->getDetails();
 
                 return $this->render('department_mail.html.twig',
@@ -77,7 +77,7 @@ class UIController extends Controller
                             'out_link' => 'https://srvubuclt001.uct.ac.za/optout/out/'. $data['hash'],
                             'view_link' => 'https://srvubuclt001.uct.ac.za/optout/view/'. $data['hash']));
             } else {
-                $course = new Course($data['course'], $data['hash'], $data['year'], false);
+                $course = new Course($data['course'], $data['hash'], $data['year'], false, $this->logger);
                 $details = $course->getDetails();
 
                 // $vula = new SakaiWebService();
@@ -314,7 +314,7 @@ class UIController extends Controller
         }
 
         if ($data['course'] === null ) {
-            $dept = new Department($data['dept'], $data['hash'], $data['year'], false, false, true);
+            $dept = new Department($data['dept'], $data['hash'], $data['year'], false, false, true, $this->logger);
             $data['details'] = $dept->getDetails();
             $data['readonly'] = ($now->diff(new \DateTime($data['date_course']))->format('%R') == '-');
             $data['readonly_s1'] = ($now->diff(new \DateTime($data['date_course']))->format('%R') == '-');
@@ -339,7 +339,7 @@ class UIController extends Controller
             return $this->render('department.html.twig', $data);
         } else {
             // Course View
-            $course = new Course($data['course'], $data['hash'], $data['year'], false, true); // last could be set to true
+            $course = new Course($data['course'], $data['hash'], $data['year'], false, true, $this->logger); // last could be set to true
 
             $data['details'] = $course->getDetails();
             $data['readonly'] = ($now->diff(new \DateTime($data['date_schedule']))->format('%R') == '-');
@@ -352,7 +352,14 @@ class UIController extends Controller
             $data['email_type'] = $data['type'];
 
             // retrieve timetable information
-            $json = file_get_contents('https://srvubuclt001.uct.ac.za/timetable/?historic=1&course='. $data['course'] .','. $data['year']);
+            $context = stream_context_create([
+                'ssl' => [
+                    'verify_peer'      => false,
+                    'verify_peer_name' => false,
+                ]
+            ]);
+
+            $json = file_get_contents('https://srvubuclt001.uct.ac.za/timetable/?historic=1&course='. $data['course'] .','. $data['year'], false, $context);
             $data['timetable'] = json_decode($json, TRUE);
             if (!isset($data['timetable']['LEC'])) {
                 $data['timetable']['LEC'] = [];
@@ -376,7 +383,7 @@ class UIController extends Controller
 
         // get department
         try {
-            $dept = new Department($data['result'][0]['dept'], $data['result'][0]['hash'], $data['result'][0]['year']);
+            $dept = new Department($data['result'][0]['dept'], $data['result'][0]['hash'], $data['result'][0]['year'], $this->logger);
             $confirmed = $dept->isOptOut;
         } catch (\Exception $e) {
             $hash = null;
@@ -483,7 +490,7 @@ class UIController extends Controller
             // $hash = $data['hash'];
 
             if ($data['course'] === null ) {
-                $dept = new Department($data['dept'], $data['hash'], $data['year'], false);
+                $dept = new Department($data['dept'], $data['hash'], $data['year'], false, $this->logger);
                 $details = $dept->getDetails();
 
                 return $this->render('department_mail.html.twig',
@@ -494,7 +501,7 @@ class UIController extends Controller
                             'out_link' => 'https://srvubuclt001.uct.ac.za/optout/out/'. $data['hash'],
                             'view_link' => 'https://srvubuclt001.uct.ac.za/optout/view/'. $data['hash']));
             } else {
-                $course = new Course($data['course'], $data['hash'], $data['year'], false);
+                $course = new Course($data['course'], $data['hash'], $data['year'], false, $this->logger);
                 $details = $course->getDetails();
 
                 $vula = new SakaiWebService();
@@ -729,12 +736,12 @@ class UIController extends Controller
             $data = $data['result'][0];
 
             if ($data['course'] === null ) {
-                $dept = new Department($data['dept'], $data['hash'], $data['year'], false);
+                $dept = new Department($data['dept'], $data['hash'], $data['year'], false, $this->logger);
                 $details = $dept->getDetails();
 
                 return new Response("Automated Setup of Lecture Recording: Department Opt-Out process", 201);
             } else {
-                $course = new Course($data['course'], $data['hash'], $data['year'], false);
+                $course = new Course($data['course'], $data['hash'], $data['year'], false, $this->logger);
                 $details = $course->getDetails();
 
                 $str = $data['course'] ." course: Automated Setup or Opt-out of Lecture Recording" .

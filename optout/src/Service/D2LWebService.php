@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Dotenv\Dotenv;
 
 class D2LWebService
@@ -10,9 +12,12 @@ class D2LWebService
     private $host;
     private $user;
     private $pass;
+    private $logger;
 
-    public function __construct()
+    public function __construct(LoggerInterface $logger = null)
     {
+        $this->logger = $logger ?: new NullLogger();
+
         // Get environment variables
         $dotenv = new Dotenv();
         $dotenv->load('.env');
@@ -36,6 +41,8 @@ class D2LWebService
     # uses above search function
     public function getConvenor($searchstr) {
 
+        $this->logger->info("Searching for convenor with search string: $searchstr");
+
         $default = [
             'eid' => NULL,
             'name' => NULL,
@@ -44,10 +51,20 @@ class D2LWebService
         ];
 
         if (strlen($searchstr) <= 1) {
+            $this->logger->warning("Convenor search string too short; returning default result", [
+                'searchstr' => $searchstr,
+                'length' => strlen($searchstr)
+            ]);
             return $default;
         }
 
         $data = $this->search($searchstr);
+        $this->logger->info("Convenor search API response received", [
+            'searchstr' => $searchstr,
+            'status' => $data['status'] ?? null,
+            'result_count' => isset($data['data']) && is_array($data['data']) ? count($data['data']) : 0
+        ]);
+
         if ($data['status'] == 'success') {
             $users = $data['data'];
             $selectedUser = null;
@@ -56,6 +73,11 @@ class D2LWebService
             foreach ($users as $user) {
                 if ($user['src'] === 'idv') {
                     $selectedUser = $user;
+                    $this->logger->info("Convenor selected from preferred source", [
+                        'searchstr' => $searchstr,
+                        'source' => 'idv',
+                        'eid' => $selectedUser['eid'] ?? null
+                    ]);
                     break; // Prefer "idv" and stop searching
                 }
             }
@@ -65,6 +87,11 @@ class D2LWebService
                 foreach ($users as $user) {
                     if ($user['src'] === 'spml') {
                         $selectedUser = $user;
+                        $this->logger->info("Convenor selected from fallback source", [
+                            'searchstr' => $searchstr,
+                            'source' => 'spml',
+                            'eid' => $selectedUser['eid'] ?? null
+                        ]);
                         break;
                     }
                 }
@@ -72,6 +99,11 @@ class D2LWebService
 
             // If a user is found, extract the required fields
             if ($selectedUser) {
+                $this->logger->info("Convenor lookup completed successfully", [
+                    'searchstr' => $searchstr,
+                    'eid' => $selectedUser['eid'] ?? null,
+                    'email' => ($selectedUser['email'] == NULL ? $selectedUser['alt_email'] : $selectedUser['email'])
+                ]);
                 return [
                     'name' => ($selectedUser['preferred_firstname'] == NULL ? $selectedUser['firstname'] : $selectedUser['preferred_firstname']) .' '. $selectedUser['lastname'],
                     'email' => ($selectedUser['email'] == NULL ? $selectedUser['alt_email'] : $selectedUser['email']),
@@ -81,8 +113,17 @@ class D2LWebService
             }
 
             // Return null if no matching user found
+            $this->logger->warning("Convenor lookup returned success but no matching source (idv/spml) found", [
+                'searchstr' => $searchstr,
+                'result_count' => is_array($users) ? count($users) : 0
+            ]);
             return $default;
         }
+
+        $this->logger->warning("Convenor lookup failed with non-success status", [
+            'searchstr' => $searchstr,
+            'status' => $data['status'] ?? null
+        ]);
         return $default;
     }
 
@@ -144,6 +185,8 @@ class D2LWebService
             CURLOPT_HTTPAUTH => CURLAUTH_BASIC, // Use Basic Authentication
             CURLOPT_USERPWD => $this->user.":".$this->pass, // Credentials for authentication
             CURLOPT_CUSTOMREQUEST => $method, // HTTP method (GET, POST, etc.)
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => 0,
         ]);
 
         // If the method is POST and data is provided, set the POST fields

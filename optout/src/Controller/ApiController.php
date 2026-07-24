@@ -471,8 +471,17 @@ class ApiController extends Controller
    */
   public function processMail($courseCode, $year, Request $request) {
 
+    $context = stream_context_create([
+        'ssl' => [
+            'verify_peer'      => false,
+            'verify_peer_name' => false,
+        ]
+    ]);
+
     // retrieve timetable information
-    $json = file_get_contents('https://srvubuclt001.uct.ac.za/timetable/?course='. $courseCode .','. $year);
+    $json = file_get_contents('https://srvubuclt001.uct.ac.za/timetable/?course='. $courseCode .','. $year,
+            false,
+            $context);
     $result = json_decode($json);
 
     if (json_last_error() == JSON_ERROR_NONE) {

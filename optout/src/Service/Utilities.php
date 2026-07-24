@@ -3,6 +3,10 @@
 namespace App\Service;
 
 use Symfony\Component\Dotenv\Dotenv;
+
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+
 use App\Service\SakaiWebService;
 use App\Service\OCRestService;
 use App\Entity\HashableInterface;
@@ -205,8 +209,10 @@ class Utilities
                 (SELECT count(*) FROM timetable.uct_workflow_email mail where mail.dept=A.dept and mail.term=:year and mail.state = 1 and `type` = 'notification' and course REGEXP '". Course::SEM2 ."') as s2_mail_sent_note,
                 (SELECT count(*) FROM timetable.uct_workflow_email mail where mail.dept=A.dept and mail.term=:year and mail.state = 1 and `type` = 'confirm' and course REGEXP '". Course::SEM2 ."') as s2_mail_sent_confirm,
                 (SELECT count(*) FROM timetable.uct_workflow_email mail where mail.dept=A.dept and mail.term=:year and mail.state = 2 and course REGEXP '". Course::SEM2 ."') as s2_mail_err
-                from timetable.uct_dept A left join timetable.dept_optout B on A.dept = B.dept
-                where B.year = :year and A.exists = 1";
+                from timetable.uct_dept A
+                left join timetable.dept_optout B on A.dept = B.dept
+                left join timetable.uct_workflow C on C.id = B.workflow_id
+                where B.year = :year and A.exists = 1 and C.active = 1";
 
             $stmt = $this->dbh->prepare($query);
 
@@ -222,7 +228,7 @@ class Utilities
             $ar = [];
             while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
 
-                $d = new Department($row['dept'], null, $worfklow_details['year'], true);
+                $d = new Department($row['dept'], null, $worfklow_details['year'], true, new NullLogger());
                 $dept = $row;
                 $dept['hash'] = $d->getHash();
                 unset($dept['secret']);

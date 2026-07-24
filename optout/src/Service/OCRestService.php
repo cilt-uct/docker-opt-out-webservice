@@ -245,6 +245,11 @@ class OCRestService
         curl_setopt($curl, CURLINFO_HEADER_OUT, true);
         curl_setopt($curl, CURLOPT_VERBOSE, true);
 
+        // Disable SSL verification
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+
         $response = curl_exec($curl);
 
         $info = curl_getinfo($curl);
