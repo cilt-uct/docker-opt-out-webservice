@@ -16,3 +16,15 @@
 #node_modules
 #package-lock.json
 ldap-server.crt
+/python_backend/.env
+/python_backend/.venv/
+/python_backend/.pytest_cache/
+/python_backend/.ruff_cache/
+/python_backend/*.egg-info/
+/python_backend/**/__pycache__/
+/python_backend/secrets/db_password.txt
+/python_backend/secrets/ldap_password.txt
+/python_backend/secrets/d2l_password.txt
+/python_backend/secrets/vula_password.txt
+/python_backend/secrets/opencast_password.txt
+/python_backend/secrets/session_secret.txt

@@ -1,21 +1,91 @@
 services:
+  api:
+    build:
+      context: ./python_backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-timetable}
+      DB_USER: ${DB_USER:-optout}
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      REDIS_URL: redis://redis:6379/0
+      REDIS_CACHE_TTL: ${REDIS_CACHE_TTL:-60}
+      SCHEDULER_INTERVAL_SECONDS: ${SCHEDULER_INTERVAL_SECONDS:-60}
+      SCHEDULER_ENABLED: ${SCHEDULER_ENABLED:-false}
+      SESSION_SECRET_FILE: /run/secrets/session_secret
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      LDAP_HOST: ${LDAP_HOST:-}
+      LDAP_PORT: ${LDAP_PORT:-636}
+      LDAP_USER: ${LDAP_USER:-}
+      LDAP_PASSWORD_FILE: /run/secrets/ldap_password
+      LDAP_BASE_DN: ${LDAP_BASE_DN:-}
+      LDAP_FILTER: ${LDAP_FILTER:-}
+      D2L_HOST: ${D2L_HOST:-}
+      D2L_USER: ${D2L_USER:-}
+      D2L_PASSWORD_FILE: /run/secrets/d2l_password
+      VULA_HOST: ${VULA_HOST:-}
+      VULA_USER: ${VULA_USER:-}
+      VULA_PASSWORD_FILE: /run/secrets/vula_password
+      OC_HOST: ${OC_HOST:-}
+      OC_USER: ${OC_USER:-}
+      OC_PASSWORD_FILE: /run/secrets/opencast_password
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    secrets:
+      - db_password
+      - ldap_password
+      - d2l_password
+      - vula_password
+      - opencast_password
+      - session_secret
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   nginx:
+    profiles: ["legacy"]
     container_name: opt-out-nginx
     build: ./nginx/
-    restart: always
+    restart: unless-stopped
     ports:
-      - 95:80
+      - "95:80"
     volumes:
-        - ./optout/:/var/www/html/
+      - ./optout/:/var/www/html/
     depends_on:
       - php
     networks:
       - opt-out-network
 
   php:
+    profiles: ["legacy"]
     container_name: opt-out-php
     build: ./optout/
-    restart: always
+    restart: unless-stopped
     expose:
       - 9000
     volumes:
@@ -23,7 +93,7 @@ services:
       - ./optout/php.ini:/usr/local/etc/php/conf.d/php.ini
     working_dir: /var/www/html
     environment:
-      - APP_ENV=dev
+      APP_ENV: dev
     command: >
       sh -c "chown -R www-data:www-data /var/www/html/var &&
              chmod -R 775 /var/www/html/var &&
@@ -31,6 +101,23 @@ services:
     networks:
       - opt-out-network
 
+volumes:
+  redis-data:
+
 networks:
   opt-out-network:
     driver: bridge
+
+secrets:
+  db_password:
+    file: ./python_backend/secrets/db_password.txt
+  ldap_password:
+    file: ./python_backend/secrets/ldap_password.txt
+  d2l_password:
+    file: ./python_backend/secrets/d2l_password.txt
+  vula_password:
+    file: ./python_backend/secrets/vula_password.txt
+  opencast_password:
+    file: ./python_backend/secrets/opencast_password.txt
+  session_secret:
+    file: ./python_backend/secrets/session_secret.txt
