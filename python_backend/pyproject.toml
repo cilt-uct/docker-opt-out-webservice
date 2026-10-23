@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uct-opt-out-api"
+version = "0.1.0"
+description = "FastAPI transition backend for the UCT opt-out service"
+requires-python = ">=3.12"
+dependencies = [
+    "apscheduler>=3.10,<4",
+    "fastapi>=0.115,<1",
+    "httpx>=0.27,<1",
+    "itsdangerous>=2.2,<3",
+    "ldap3>=2.9,<3",
+    "pymysql>=1.1,<2",
+    "python-multipart>=0.0.9",
+    "redis>=5,<7",
+    "sqlalchemy>=2.0,<3",
+    "uvicorn[standard]>=0.30,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.27,<1",
+    "pytest>=8,<9",
+    "ruff>=0.6,<1",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+ignore = ["B008"]
